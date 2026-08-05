@@ -47,6 +47,8 @@ searchable picker, or `vp run <name>` for one task. Built-in quality tools:
 - Commits use the `git-commit-ascii` format — two emojis, an action word, and a
   body explaining *why*. Branch and PR work goes through `git-flow`.
 - Notable branches and checkpoints get written up in `_other/git/`.
+- Every release gets two write-ups in `_other/changelog/` — a technical
+  changelog and a blog post — indexed from the root `CHANGELOG.md`.
 - Skills are edited once in `_other/skills/` and linked out; never edit a
   symlinked copy under `.claude/`, `.cursor/`, or `.agents/`.
 
@@ -54,5 +56,6 @@ searchable picker, or `vp run <name>` for one task. Built-in quality tools:
 
 - `_other/` folder purpose and script conventions — `_other/AGENTS/OTHER.md`
 - Git history records and commit style — `_other/AGENTS/GIT.md`
+- Release notes, twice per release — `_other/changelog/CHANGELOG-INFO.md`
 - The skill library and how linking works — `_other/AGENTS/SKILLS.md`
 - Shape of a further-reading note (sample) — `_other/AGENTS/example.md`

@@ -1,0 +1,10 @@
+Replace this file with your project's ASCII banner, generated once and then
+pasted verbatim into every blog post. Any block-letter generator works; keep
+the width under 64 characters so it survives a narrow viewport.
+
+██████╗ ███████╗███╗   ██╗ █████╗ ███╗   ███╗███████╗
+██╔══██╗██╔════╝████╗  ██║██╔══██╗████╗ ████║██╔════╝
+██████╔╝█████╗  ██╔██╗ ██║███████║██╔████╔██║█████╗
+██╔══██╗██╔══╝  ██║╚██╗██║██╔══██║██║╚██╔╝██║██╔══╝
+██║  ██║███████╗██║ ╚████║██║  ██║██║ ╚═╝ ██║███████╗
+╚═╝  ╚═╝╚══════╝╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝

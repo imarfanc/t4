@@ -14,6 +14,7 @@ definitions. One folder means an agent can be told "scratch work goes in
 | Path                | What it holds                                                                    |
 | ------------------- | -------------------------------------------------------------------------------- |
 | `_other/AGENTS/`    | Deep-dive notes linked from the root `AGENTS.md` **Further reading** list          |
+| `_other/changelog/` | Per-release changelogs and blog posts — see [CHANGELOG-INFO](../changelog/CHANGELOG-INFO.md) |
 | `_other/ci/`        | Deploy and CI notes — setup logs, deploy logs, runbook fragments                   |
 | `_other/custom/`    | Anything project-specific that fits nowhere else; rename it to suit               |
 | `_other/docs/`      | Human documentation, plus `Ai-Chats/` transcripts worth keeping                   |
