@@ -1,0 +1,138 @@
+<melker>
+  <title>vt6 recipes</title>
+
+  <policy>
+  {
+    "name": "vt6 recipe picker",
+    "description": "Pick a just recipe, grouped and fuzzy-searchable.",
+    "comment": [
+      "Runs `just --dump` to read the recipe list from the repository justfile.",
+      "Writes only the chosen recipe name, to the file named by MELKER_CHOICE.",
+      "Runs nothing else — the justfile runs the recipe after this app exits."
+    ],
+    "permissions": {
+      "read": ["cwd"],
+      "run": ["just"],
+      "env": ["MELKER_CHOICE"],
+      "write": ["$ENV{MELKER_CHOICE}"]
+    }
+  }
+  </policy>
+
+  <style>
+    /* The palette paints itself from the theme palette, not from selectors
+       aimed at its rows, so its colors have to be set as `--theme-*`
+       overrides — the comments below say which part each one drives.
+       `just` also pins MELKER_THEME=fullcolor-dark, because the auto-detected
+       theme can land on the grayscale one. */
+    :root {
+      --theme-surface: #1b1e2b; /* palette background, and the dimmed backdrop */
+      --theme-border: #d75fd7; /* palette frame and separator */
+      --theme-text-primary: #e6e6e6; /* recipe rows and the palette title */
+      --theme-text-secondary: #d75fd7; /* group headers — already bold */
+      --theme-text-muted: #7d8199; /* placeholder, and everything behind the modal */
+      --theme-input-background: #232739;
+      --theme-primary: #d75fd7;
+      --theme-scrollbar-thumb: #d75fd7;
+      --theme-scrollbar-track: #3a3350;
+    }
+
+    #frame { border: rounded; border-color: #d75fd7; padding: 0 1; }
+    #title { color: #d75fd7; font-weight: bold; }
+    #hint { color: #7d8199; }
+  </style>
+
+  <container id="frame" style="flex-direction: column;">
+    <text id="title">vt6</text>
+    <text id="hint">Type to filter · Enter runs · Esc cancels</text>
+    <command-palette
+      id="palette"
+      system="false"
+      width="72"
+      maxVisible="24"
+      placeholder="Search recipes..."
+      onSelect="$app.choose(event)"
+      onOpenChange="$app.dismissed(event)" />
+  </container>
+
+  <script type="typescript">
+    /**
+     * The justfile is the single source of truth: `--dump` reports each
+     * recipe's name, doc comment, privacy and `[group(...)]` attribute, so the
+     * picker never keeps a second copy of the menu.
+     */
+    export async function loadRecipes() {
+      const dump = new Deno.Command("just", {
+        args: ["--dump", "--dump-format", "json"],
+        stdout: "piped",
+        stderr: "piped",
+      });
+      const { code, stdout, stderr } = await dump.output();
+      if (code !== 0) {
+        throw new Error(new TextDecoder().decode(stderr).trim());
+      }
+
+      const parsed = JSON.parse(new TextDecoder().decode(stdout));
+      const options = [];
+      for (const recipe of Object.values(parsed.recipes ?? {})) {
+        if (recipe.private || recipe.name.startsWith("_")) continue;
+        const group = recipe.attributes
+          ?.find((attribute) => attribute?.group)?.group ?? "other";
+        options.push({
+          id: recipe.name,
+          label: recipe.doc ? `${recipe.name} — ${recipe.doc}` : recipe.name,
+          group,
+        });
+      }
+
+      // The palette prints a header every time the group changes, so options
+      // have to arrive grouped — otherwise "run" appears three times. Groups
+      // follow the justfile's own order; anything new lands after them.
+      const order = ["run", "check", "tools"];
+      const rank = (group: string) => {
+        const index = order.indexOf(group);
+        return index === -1 ? order.length : index;
+      };
+      return options.sort((a, b) =>
+        rank(a.group) - rank(b.group) ||
+        a.group.localeCompare(b.group) ||
+        a.id.localeCompare(b.id)
+      );
+    }
+
+    /** Set once a recipe is picked, so closing the palette is not a dismissal. */
+    let chosen = false;
+
+    /** The chosen name goes to a file; the justfile runs it after we exit. */
+    export async function choose(event: { value: string }) {
+      chosen = true;
+      const target = Deno.env.get("MELKER_CHOICE");
+      if (target) await Deno.writeTextFile(target, event.value);
+      $melker.exit();
+    }
+
+    /**
+     * The palette is the whole app, so dismissing it (Escape, or a click
+     * outside) means quitting — otherwise you are left staring at an empty
+     * frame with no way back to the list.
+     */
+    export function dismissed(open: boolean) {
+      if (open === true || chosen) return;
+      $melker.exit();
+    }
+  </script>
+
+  <script type="typescript" async="ready">
+    const palette = $melker.getElementById("palette");
+    try {
+      palette.setOptions(await $app.loadRecipes());
+      // open() rather than `props.open = true`: the method runs the component's
+      // open path (focus, scroll) and this render call puts it on screen now,
+      // instead of waiting for the first keypress to trigger a redraw.
+      palette.open();
+      $melker.render();
+    } catch (error) {
+      $melker.getElementById("hint").setValue(`just --dump failed: ${error}`);
+    }
+  </script>
+</melker>

@@ -1,0 +1,44 @@
+# link-skills configuration
+#
+# This file is the source of truth. `just link-all` makes the repo match it:
+# skills set to `true` get a symlink, skills set to `false` have their symlink
+# removed. Only symlinks pointing into _other/skills are ever removed — a real
+# file or directory in the way is always left alone.
+#
+# Run `just check` to preview changes without writing anything.
+
+# Where symlinks are created. Set `enabled: false` to leave a tool untouched.
+targets:
+  - id: agents
+    path: .agents/skills
+    enabled: true
+
+  - id: claude
+    path: .claude/skills
+    enabled: true
+
+  - id: cursor
+    path: .cursor/skills
+    enabled: true
+
+# Per-skill toggles, grouped by the folder under _other/skills.
+#
+#   <skill>: true              link into every enabled target
+#   <skill>: false             remove the symlink from every target
+#   <skill>: [claude, cursor]  link into these targets only, remove from others
+#
+# Skills found on disk but missing here are treated as `true` and reported so
+# you can pin them explicitly.
+skills:
+  common:
+    frontend-design: [claude]
+    git-commit-ascii: [claude]
+    git-flow: [agents]
+
+  other:
+    ego-browser: [cursor]
+
+  rare:
+    here-now: false
+    migrate-app: [cursor]
+    standardize-vt6-app: [agents]

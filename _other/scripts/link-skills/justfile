@@ -1,0 +1,102 @@
+# just-runner-doc: Symlink _other/skills into .agents, .claude and .cursor
+
+script := "link-skills.ts"
+perms := "--allow-read --allow-write --allow-env"
+config := "data/skills.yaml"
+repo_root := justfile_directory() / ".." / ".." / ".."
+
+_default:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just_bin="{{ just_executable() }}"
+    if command -v gum >/dev/null 2>&1; then
+        recipe="$("$just_bin" --summary --unsorted | tr ' ' '\n' | gum choose \
+            --header 'Choose a recipe' \
+            --cursor '󰌌 ' \
+            --selected-prefix '󰄬 ' \
+            --height 12)"
+        [ -z "$recipe" ] || "$just_bin" "$recipe"
+    else
+        printf '\n󰀦 Gum is not installed; using the basic Just chooser.\nInstall Gum: https://github.com/charmbracelet/gum\n\n' >&2
+        "$just_bin" --unsorted --choose
+    fi
+
+# Pick targets and skills interactively, then reconcile
+link:
+    @{{ just_executable() }} _banner "link skills" "interactive picker"
+    deno run {{ perms }} {{ script }}
+
+# Apply data/skills.yaml exactly, without prompting
+link-all:
+    @{{ just_executable() }} _banner "link skills" "applying {{ config }}"
+    deno run {{ perms }} {{ script }} --all
+
+# Show what would change without writing anything
+check:
+    deno run {{ perms }} {{ script }} --dry-run
+
+# Report stale links and drift between skills.yaml and disk
+prune:
+    deno run {{ perms }} {{ script }} --prune
+
+# Open the toggle config in $EDITOR
+config:
+    @"${EDITOR:-vi}" {{ config }}
+
+# List every symlink in the repository and whether it resolves
+links:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    cd "{{ repo_root }}"
+    root="$(pwd)"
+    found=0
+    broken=0
+    while IFS= read -r link; do
+        rel="${link#./}"
+        target="$(readlink "$link")"
+        found=$((found + 1))
+        if [ -e "$link" ]; then
+            printf '  \033[32m󰄬\033[0m  %s \033[2m→ %s\033[0m\n' "$rel" "$target"
+        else
+            printf '  \033[31m󰅙\033[0m  %s \033[2m→ %s (broken)\033[0m\n' "$rel" "$target"
+            broken=$((broken + 1))
+        fi
+    done < <(find . -path ./.git -prune -o -type l -print | sort)
+    printf '\n  \033[2m󰉋 %s\033[0m\n' "$root"
+    if [ "$broken" -gt 0 ]; then
+        printf '  \033[2m%s symlinks, %s broken\033[0m\n\n' "$found" "$broken"
+        exit 1
+    fi
+    printf '  \033[2m%s symlinks, all resolve\033[0m\n\n' "$found"
+
+# Type-check the script and its library
+typecheck:
+    deno check {{ script }}
+
+# Format and lint
+fmt:
+    deno fmt
+    deno lint
+
+# Show the script's own help
+help:
+    @deno run {{ perms }} {{ script }} --help
+
+# Styled startup banner; falls back to plain text without Gum
+_banner title subtitle:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    url_line="󰉋 $(cd ../../.. && pwd)/_other/skills"
+    body=$(printf '🌼 %s\n%s\n%s\n󰌌 press Ctrl+C to cancel' \
+        "{{ title }}" "$url_line" "{{ subtitle }}")
+    if command -v gum >/dev/null 2>&1 && [ -t 1 ]; then
+        CLICOLOR_FORCE=1 gum style \
+            --border rounded --border-foreground 212 \
+            --padding "0 2" --margin "1 0" \
+            "$body"
+    else
+        if ! command -v gum >/dev/null 2>&1; then
+            printf '\n󰀦 Gum is not installed; using plain output.\nInstall Gum: https://github.com/charmbracelet/gum\n' >&2
+        fi
+        printf '\n%s\n\n' "$body"
+    fi
