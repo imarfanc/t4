@@ -1,5 +1,6 @@
-import { parse } from "@std/yaml";
-import { join } from "@std/path";
+import fs from "node:fs";
+import path from "node:path";
+import { parse } from "yaml";
 
 import type { Skill, Target } from "./skills.ts";
 
@@ -14,7 +15,7 @@ export interface Config {
   path: string | null;
 }
 
-export const CONFIG_RELATIVE_PATH = join(
+export const CONFIG_RELATIVE_PATH = path.join(
   "_other",
   "scripts",
   "link-skills",
@@ -23,7 +24,7 @@ export const CONFIG_RELATIVE_PATH = join(
 );
 
 export function configPath(repoRoot: string): string {
-  return join(repoRoot, CONFIG_RELATIVE_PATH);
+  return path.join(repoRoot, CONFIG_RELATIVE_PATH);
 }
 
 const DEFAULT_TARGETS: ReadonlyArray<{ id: string; path: string }> = [
@@ -34,10 +35,10 @@ const DEFAULT_TARGETS: ReadonlyArray<{ id: string; path: string }> = [
 
 function defaultConfig(repoRoot: string): Config {
   return {
-    targets: DEFAULT_TARGETS.map(({ id, path }) => ({
+    targets: DEFAULT_TARGETS.map(({ id, path: targetPath }) => ({
       id,
-      label: path,
-      path: join(repoRoot, ...path.split("/")),
+      label: targetPath,
+      path: path.join(repoRoot, ...targetPath.split("/")),
     })),
     skills: {},
     path: null,
@@ -60,10 +61,10 @@ function parseTargets(raw: unknown, repoRoot: string): Target[] {
       fail("each target must be a mapping with `id` and `path`");
     }
 
-    const { id, path, enabled } = entry as Record<string, unknown>;
+    const { id, path: targetPath, enabled } = entry as Record<string, unknown>;
 
     if (typeof id !== "string" || id.length === 0) fail("each target needs a string `id`");
-    if (typeof path !== "string" || path.length === 0) {
+    if (typeof targetPath !== "string" || targetPath.length === 0) {
       fail(`target "${id}" needs a string \`path\``);
     }
     if (enabled !== undefined && typeof enabled !== "boolean") {
@@ -76,8 +77,8 @@ function parseTargets(raw: unknown, repoRoot: string): Target[] {
 
     targets.push({
       id,
-      label: path,
-      path: join(repoRoot, ...path.split("/")),
+      label: targetPath,
+      path: path.join(repoRoot, ...targetPath.split("/")),
     });
   }
 
@@ -113,17 +114,17 @@ function parseSkills(
       }
 
       if (Array.isArray(toggle)) {
-        const ids = toggle.map((id) => {
-          if (typeof id !== "string") {
+        const ids = toggle.map((entryId) => {
+          if (typeof entryId !== "string") {
             fail(`skills.${category}.${name}: target ids must be strings`);
           }
-          if (!targetIds.has(id)) {
+          if (!targetIds.has(entryId)) {
             fail(
-              `skills.${category}.${name}: unknown target "${id}" ` +
+              `skills.${category}.${name}: unknown target "${entryId}" ` +
                 `(known: ${[...targetIds].join(", ")})`,
             );
           }
-          return id;
+          return entryId;
         });
         group[name] = ids;
         continue;
@@ -140,13 +141,13 @@ function parseSkills(
 
 /** Read data/skills.yaml, falling back to sensible defaults when absent. */
 export function loadConfig(repoRoot: string): Config {
-  const path = configPath(repoRoot);
+  const filePath = configPath(repoRoot);
 
   let text: string;
   try {
-    text = Deno.readTextFileSync(path);
+    text = fs.readFileSync(filePath, "utf8");
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) return defaultConfig(repoRoot);
+    if (isENOENT(error)) return defaultConfig(repoRoot);
     throw error;
   }
 
@@ -166,7 +167,16 @@ export function loadConfig(repoRoot: string): Config {
   const targets = parseTargets(rawTargets, repoRoot);
   const skills = parseSkills(rawSkills, new Set(targets.map((t) => t.id)));
 
-  return { targets, skills, path };
+  return { targets, skills, path: filePath };
+}
+
+function isENOENT(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "ENOENT"
+  );
 }
 
 /**

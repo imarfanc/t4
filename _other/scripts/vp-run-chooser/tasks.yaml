@@ -1,0 +1,24 @@
+# Task groups for `vp run choose`. Names must match package.json scripts.
+# Ungrouped scripts appear under "other" at the end.
+
+order: [run, check, tools]
+
+groups:
+  run:
+    dev: Launch the desktop window with hot reload
+    start: Launch the desktop window
+    browser: Launch the plain browser server
+    public: Launch with authentication switched off
+
+  check:
+    test: Run the full test suite
+    test:quick: Run the tests only
+
+  tools:
+    build:auth: Bundle the auth frontend
+    skills: Link skills — interactive picker
+    skills:all: Apply skills.yaml exactly, no prompts
+    skills:check: Preview skill symlink changes
+    skills:prune: Report stale links and config drift
+    skills:links: List every symlink in the repo
+    skills:config: Edit skills.yaml in $EDITOR

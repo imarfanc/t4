@@ -4,25 +4,24 @@ Symlinks skill folders from `_other/skills/<category>/<skill>` into
 `.agents/skills/`, `.claude/skills/` and `.cursor/skills/`, so one copy of a
 skill serves every agent tool.
 
-## Run it
+Requires [Vite+](https://viteplus.dev/) (`vp`) — a new Mac with Xcode and `vp`
+is enough. From the repo root run `vp install` once, then:
 
 ```bash
-cd _other/scripts/link-skills
-just            # Gum recipe picker
-just config     # edit the toggles in $EDITOR
-just check      # preview — show what would change, write nothing
-just link       # interactive: choose targets, then skills
-just link-all   # apply the config exactly, no prompts
-just prune      # report stale links and config drift
-just links      # list every symlink in the repo
+vp run choose          # interactive task picker (all repo scripts)
+vp run skills           # interactive: choose targets, then skills
+vp run skills:config    # edit the toggles in $EDITOR
+vp run skills:check     # preview — show what would change, write nothing
+vp run skills:all       # apply the config exactly, no prompts
+vp run skills:prune     # report stale links and config drift
+vp run skills:links     # list every symlink in the repo
 ```
 
-Without `just`, use the Deno tasks directly: `deno task link`,
-`deno task link-all`, `deno task check`.
+Built-in quality tools (no script needed): `vp fmt`, `vp lint`, `vp check`.
 
 ## Toggling skills
 
-[`data/skills.yaml`](../data/skills.yaml) is the source of truth. `just link-all`
+[`data/skills.yaml`](../data/skills.yaml) is the source of truth. `vp run skills:all`
 makes the repo match it.
 
 ```yaml
@@ -64,9 +63,8 @@ in interactive mode, confirmed before anything is written.
 
 ```text
 _other/scripts/link-skills/
-├── justfile           # recipes, Gum picker, banner
-├── deno.jsonc         # imports and deno tasks
-├── link-skills.ts     # CLI and interactive UI
+├── links.sh           # list symlinks (vp run skills:links)
+├── link-skills.ts     # CLI and interactive UI (vp node)
 ├── lib/
 │   ├── skills.ts      # discovery and symlink logic (no UI)
 │   └── config.ts      # skills.yaml parsing and validation
@@ -82,7 +80,7 @@ the linking behavior testable without a terminal.
 
 Category folders under `_other/skills/` are discovered from disk, so renaming
 one needs no code change — but the keys under `skills:` in `skills.yaml` must be
-renamed to match, or every skill in it reads as "not on disk". Run `just links`
+renamed to match, or every skill in it reads as "not on disk". Run `vp run skills:links`
 afterwards to confirm nothing is left dangling.
 
 ## Terminal font

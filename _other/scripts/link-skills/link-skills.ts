@@ -1,11 +1,10 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env
 // Reconcile _other/skills with .agents, .claude and .cursor, per data/skills.yaml.
 
-import { Checkbox, Confirm } from "@cliffy/prompt";
-import { Table } from "@cliffy/table";
-import { parseArgs } from "@std/cli/parse-args";
-import { bold, cyan, dim, green, red, yellow } from "@std/fmt/colors";
-import { join, relative } from "@std/path";
+import { checkbox, confirm } from "@inquirer/prompts";
+import { parseArgs } from "node:util";
+import path from "node:path";
+import tty from "node:tty";
+import pc from "picocolors";
 
 import {
   type Config,
@@ -29,6 +28,9 @@ import {
   summarize,
   type Target,
 } from "./lib/skills.ts";
+import { formatTable } from "./lib/table.ts";
+
+const { bold, cyan, dim, green, red, yellow } = pc;
 
 // Nerd Font glyphs (MesloLGS NF). Kept in one place so the UI stays consistent.
 const ICON = {
@@ -39,9 +41,14 @@ const ICON = {
   keyboard: "\u{F030C}", // 󰌌
 } as const;
 
-const flags = parseArgs(Deno.args, {
-  boolean: ["all", "dry-run", "prune", "help"],
-  alias: { h: "help", n: "dry-run", a: "all" },
+const { values: flags } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    all: { type: "boolean", short: "a", default: false },
+    "dry-run": { type: "boolean", short: "n", default: false },
+    prune: { type: "boolean", default: false },
+    help: { type: "boolean", short: "h", default: false },
+  },
 });
 
 const applyConfig = flags.all === true;
@@ -56,10 +63,10 @@ Configuration lives in ${bold(CONFIG_RELATIVE_PATH)} and is the source of
 truth: skills toggled off there have their symlinks removed.
 
 ${bold("Usage")}
-  just link                 Interactive picker
-  just link-all             Apply the config exactly, no prompts
-  just check                Preview changes, write nothing
-  just links                List every symlink in the repo
+  vp run skills             Interactive picker
+  vp run skills:all         Apply the config exactly, no prompts
+  vp run skills:check       Preview changes, write nothing
+  vp run skills:links       List every symlink in the repo
 
 ${bold("Options")}
   -a, --all       Apply the config without prompting
@@ -71,10 +78,10 @@ ${bold("Options")}
 
 if (showHelp) {
   printHelp();
-  Deno.exit(0);
+  process.exit(0);
 }
 
-const isInteractive = Deno.stdin.isTerminal() && Deno.stdout.isTerminal();
+const isInteractive = tty.isatty(0) && tty.isatty(1);
 
 const repoRoot = findRepoRoot();
 const sourceDir = skillsSourceDir(repoRoot);
@@ -85,29 +92,25 @@ try {
   config = loadConfig(repoRoot);
 } catch (error) {
   console.error(`${red(ICON.error)} ${error instanceof Error ? error.message : error}`);
-  Deno.exit(1);
+  process.exit(1);
 }
 
 const targets = config.targets;
 
 if (skills.length === 0) {
   console.error(`${red(ICON.error)} No skills found under ${dim(sourceDir)}`);
-  Deno.exit(1);
+  process.exit(1);
 }
 
 const nameWidth = Math.max(...skills.map((s) => s.name.length)) + 2;
 
 /** Terminal width, clamped so tables never wrap awkwardly on narrow windows. */
 function terminalWidth(): number {
-  try {
-    return Math.max(40, Deno.consoleSize().columns - 4);
-  } catch {
-    return 80;
-  }
+  return Math.max(40, (tty.isatty(1) ? process.stdout.columns : 80) - 4);
 }
 
 function stateOf(skill: Skill, target: Target): LinkState {
-  return inspectLink(join(target.path, skill.name), skill.sourcePath).state;
+  return inspectLink(path.join(target.path, skill.name), skill.sourcePath).state;
 }
 
 /** How a skill/target pair reads in the status table, config included. */
@@ -132,33 +135,30 @@ function paintCell(skill: Skill, target: Target): string {
 }
 
 function statusTable(skillList: Skill[], targetList: Target[]): string {
-  return new Table()
-    .header([
+  return formatTable({
+    headers: [
       bold("Category"),
       bold("Skill"),
       ...targetList.map((t) => bold(t.label)),
-    ])
-    .body(
-      skillList.map((skill) => [
-        dim(skill.category),
-        skill.name,
-        ...targetList.map((target) => paintCell(skill, target)),
-      ]),
-    )
-    .padding(2)
-    .indent(2)
-    .border(true)
-    .maxWidth(terminalWidth())
-    .toString();
+    ],
+    rows: skillList.map((skill) => [
+      dim(skill.category),
+      skill.name,
+      ...targetList.map((target) => paintCell(skill, target)),
+    ]),
+    padding: 2,
+    indent: 2,
+    maxWidth: terminalWidth(),
+  });
 }
 
 function banner(): void {
   const configLabel = config.path
-    ? relative(repoRoot, config.path)
+    ? path.relative(repoRoot, config.path)
     : "defaults (no skills.yaml)";
 
   console.log();
-  console.log(`  ${bold(cyan("link-skills"))}  ${dim("vt6 agent skill linker")}`);
+  console.log(`  ${bold(cyan("link-skills"))}  ${dim("t4 agent skill linker")}`);
   console.log(
     `  ${dim(`${ICON.folder} ${shortTargetDir(sourceDir)}  →  ${targets.map((t) => t.label).join("  ")}`)}`,
   );
@@ -193,14 +193,12 @@ function report(results: LinkResult[], previewOnly: boolean): void {
 
   console.log();
   console.log(
-    new Table()
-      .header([bold(previewOnly ? "Would do" : "Result"), bold("Skill"), bold("Target")])
-      .body(
-        changed.map((r) => [paintAction(r), r.skill, dim(shortTargetDir(r.targetDir))]),
-      )
-      .padding(2)
-      .indent(2)
-      .toString(),
+    formatTable({
+      headers: [bold(previewOnly ? "Would do" : "Result"), bold("Skill"), bold("Target")],
+      rows: changed.map((r) => [paintAction(r), r.skill, dim(shortTargetDir(r.targetDir))]),
+      padding: 2,
+      indent: 2,
+    }),
   );
 
   const counts = summarize(results);
@@ -249,7 +247,7 @@ if (applyConfig || !isInteractive) {
     console.error(
       `${yellow(ICON.warn)} Not a terminal — run with --all or --dry-run for non-interactive use.`,
     );
-    Deno.exit(1);
+    process.exit(1);
   }
 
   banner();
@@ -257,7 +255,7 @@ if (applyConfig || !isInteractive) {
   if (pruneOnly) {
     reportDrift();
     console.log(`\n  ${dim("Nothing was written.")}\n`);
-    Deno.exit(0);
+    process.exit(0);
   }
 
   const results = reconcile(
@@ -268,7 +266,7 @@ if (applyConfig || !isInteractive) {
   );
   report(results, dryRun);
   reportDrift();
-  Deno.exit(summarize(results).error > 0 ? 1 : 0);
+  process.exit(summarize(results).error > 0 ? 1 : 0);
 }
 
 // ── Interactive ──────────────────────────────────────────────────────────────
@@ -280,20 +278,19 @@ reportDrift();
 
 if (pruneOnly) {
   console.log(`\n  ${dim("Nothing was written.")}\n`);
-  Deno.exit(0);
+  process.exit(0);
 }
 
 const KEYS = dim("space toggles · enter confirms · ctrl+c cancels");
 
-const chosenTargetIds = await Checkbox.prompt({
+const chosenTargetIds = await checkbox({
   message: `Reconcile which directories?  ${KEYS}`,
-  options: targets.map((target) => ({
+  choices: targets.map((target) => ({
     name: target.label,
     value: target.id,
     checked: true,
   })),
-  minOptions: 1,
-  confirmSubmit: false,
+  required: true,
 });
 
 const chosenTargets = targets.filter((t) => chosenTargetIds.includes(t.id));
@@ -316,17 +313,15 @@ function summaryOf(skill: Skill): string {
   return dim(`  ${clipped}`);
 }
 
-const chosenSkillNames = await Checkbox.prompt({
+const chosenSkillNames = await checkbox({
   message: `Which skills?  ${KEYS}`,
-  options: skills.map((skill) => ({
+  choices: skills.map((skill) => ({
     name: `${skill.name.padEnd(nameWidth)}${dim(skill.category.padEnd(10))}${summaryOf(skill)}`,
     value: skill.name,
     checked: needsWork(skill),
   })),
-  minOptions: 1,
-  maxRows: 15,
-  search: skills.length > 12,
-  confirmSubmit: false,
+  pageSize: 15,
+  required: true,
 });
 
 const chosenSkills = skills.filter((s) => chosenSkillNames.includes(s.name));
@@ -337,18 +332,18 @@ const pending = preview.filter((r) => r.action !== "ok");
 
 if (pending.length === 0) {
   console.log(`\n  ${green(ICON.ok)} Nothing to change — the selection matches the config.\n`);
-  Deno.exit(0);
+  process.exit(0);
 }
 
 report(preview, true);
 
 if (dryRun) {
   console.log(`  ${dim("Dry run — nothing was written.")}\n`);
-  Deno.exit(0);
+  process.exit(0);
 }
 
 const removals = pending.filter((r) => r.action === "removed").length;
-const confirmed = await Confirm.prompt({
+const confirmed = await confirm({
   message: removals > 0
     ? `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}, ` +
       `including ${removals} removal${removals === 1 ? "" : "s"}?`
@@ -358,7 +353,7 @@ const confirmed = await Confirm.prompt({
 
 if (!confirmed) {
   console.log(`\n  ${dim("Cancelled. Nothing was written.")}\n`);
-  Deno.exit(0);
+  process.exit(0);
 }
 
 const results = reconcile(chosenSkills, chosenTargets, wanted);
@@ -366,4 +361,4 @@ report(results, false);
 console.log(statusTable(skills, targets));
 console.log(`\n  ${dim(`${ICON.keyboard} done`)}\n`);
 
-Deno.exit(summarize(results).error > 0 ? 1 : 0);
+process.exit(summarize(results).error > 0 ? 1 : 0);

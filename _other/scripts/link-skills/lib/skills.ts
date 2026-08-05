@@ -1,4 +1,5 @@
-import { join, relative, resolve } from "@std/path";
+import fs from "node:fs";
+import path from "node:path";
 
 export interface Skill {
   /** Directory name, also the symlink name created in each target. */
@@ -39,18 +40,27 @@ export interface Target {
   path: string;
 }
 
+function isENOENT(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code: string }).code === "ENOENT"
+  );
+}
+
 /** Walk up from `start` until a directory containing `_other/skills` is found. */
-export function findRepoRoot(start = Deno.cwd()): string {
-  let dir = resolve(start);
+export function findRepoRoot(start = process.cwd()): string {
+  let dir = path.resolve(start);
 
   while (true) {
     try {
-      if (Deno.statSync(join(dir, "_other", "skills")).isDirectory) return dir;
+      if (fs.statSync(path.join(dir, "_other", "skills")).isDirectory()) return dir;
     } catch {
       // keep walking
     }
 
-    const parent = resolve(dir, "..");
+    const parent = path.resolve(dir, "..");
     if (parent === dir) break;
     dir = parent;
   }
@@ -61,14 +71,14 @@ export function findRepoRoot(start = Deno.cwd()): string {
 }
 
 export function skillsSourceDir(repoRoot: string): string {
-  return join(repoRoot, "_other", "skills");
+  return path.join(repoRoot, "_other", "skills");
 }
 
 /** Pull `description:` out of a SKILL.md YAML frontmatter block. */
 function readDescription(skillDir: string): string {
   let text: string;
   try {
-    text = Deno.readTextFileSync(join(skillDir, "SKILL.md"));
+    text = fs.readFileSync(path.join(skillDir, "SKILL.md"), "utf8");
   } catch {
     return "";
   }
@@ -92,8 +102,9 @@ export function discoverSkills(sourceDir: string): Skill[] {
 
   let categories: string[];
   try {
-    categories = [...Deno.readDirSync(sourceDir)]
-      .filter((entry) => entry.isDirectory || entry.isSymlink)
+    categories = fs
+      .readdirSync(sourceDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
       .map((entry) => entry.name)
       .sort();
   } catch {
@@ -101,21 +112,21 @@ export function discoverSkills(sourceDir: string): Skill[] {
   }
 
   for (const category of categories) {
-    const categoryDir = join(sourceDir, category);
+    const categoryDir = path.join(sourceDir, category);
 
-    let entries: Deno.DirEntry[];
+    let entries: fs.DirEntry[];
     try {
-      entries = [...Deno.readDirSync(categoryDir)];
+      entries = fs.readdirSync(categoryDir, { withFileTypes: true });
     } catch {
       continue;
     }
 
     for (const entry of entries) {
-      if (!entry.isDirectory && !entry.isSymlink) continue;
+      if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
 
-      const sourcePath = join(categoryDir, entry.name);
+      const sourcePath = path.join(categoryDir, entry.name);
       try {
-        Deno.statSync(join(sourcePath, "SKILL.md"));
+        fs.statSync(path.join(sourcePath, "SKILL.md"));
       } catch {
         continue;
       }
@@ -136,25 +147,25 @@ export function discoverSkills(sourceDir: string): Skill[] {
 
 /** The relative path a symlink at `linkDir/<name>` should point at. */
 export function expectedRelativeTarget(linkDir: string, sourcePath: string): string {
-  return relative(linkDir, sourcePath);
+  return path.relative(linkDir, sourcePath);
 }
 
 export function inspectLink(linkPath: string, expectedSource: string): LinkStatus {
-  let stat: Deno.FileInfo;
+  let stat: fs.Stats;
   try {
-    stat = Deno.lstatSync(linkPath);
+    stat = fs.lstatSync(linkPath);
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
+    if (isENOENT(error)) {
       return { state: "missing", currentTarget: null };
     }
     throw error;
   }
 
-  if (!stat.isSymlink) return { state: "not-a-symlink", currentTarget: null };
+  if (!stat.isSymbolicLink()) return { state: "not-a-symlink", currentTarget: null };
 
-  const currentTarget = Deno.readLinkSync(linkPath);
-  const linkDir = resolve(linkPath, "..");
-  const correct = resolve(linkDir, currentTarget) === resolve(expectedSource);
+  const currentTarget = fs.readlinkSync(linkPath);
+  const linkDir = path.resolve(linkPath, "..");
+  const correct = path.resolve(linkDir, currentTarget) === path.resolve(expectedSource);
 
   return { state: correct ? "linked" : "wrong-target", currentTarget };
 }
@@ -177,7 +188,7 @@ export function linkSkill(
   targetDir: string,
   options: { dryRun?: boolean } = {},
 ): LinkResult {
-  const linkPath = join(targetDir, skill.name);
+  const linkPath = path.join(targetDir, skill.name);
   const relativeTarget = expectedRelativeTarget(targetDir, skill.sourcePath);
   const status = inspectLink(linkPath, skill.sourcePath);
 
@@ -201,9 +212,9 @@ export function linkSkill(
   }
 
   try {
-    Deno.mkdirSync(targetDir, { recursive: true });
-    if (status.state === "wrong-target") Deno.removeSync(linkPath);
-    Deno.symlinkSync(relativeTarget, linkPath);
+    fs.mkdirSync(targetDir, { recursive: true });
+    if (status.state === "wrong-target") fs.unlinkSync(linkPath);
+    fs.symlinkSync(relativeTarget, linkPath);
     return { skill: skill.name, targetDir, action, message: relativeTarget };
   } catch (error) {
     return {
@@ -225,19 +236,19 @@ export function unlinkSkill(
   targetDir: string,
   options: { dryRun?: boolean } = {},
 ): LinkResult {
-  const linkPath = join(targetDir, skillName);
+  const linkPath = path.join(targetDir, skillName);
 
-  let stat: Deno.FileInfo;
+  let stat: fs.Stats;
   try {
-    stat = Deno.lstatSync(linkPath);
+    stat = fs.lstatSync(linkPath);
   } catch (error) {
-    if (error instanceof Deno.errors.NotFound) {
+    if (isENOENT(error)) {
       return { skill: skillName, targetDir, action: "ok", message: "not linked" };
     }
     throw error;
   }
 
-  if (!stat.isSymlink) {
+  if (!stat.isSymbolicLink()) {
     return {
       skill: skillName,
       targetDir,
@@ -246,8 +257,8 @@ export function unlinkSkill(
     };
   }
 
-  const currentTarget = Deno.readLinkSync(linkPath);
-  if (!currentTarget.includes(join("_other", "skills"))) {
+  const currentTarget = fs.readlinkSync(linkPath);
+  if (!currentTarget.includes(path.join("_other", "skills"))) {
     return {
       skill: skillName,
       targetDir,
@@ -261,7 +272,7 @@ export function unlinkSkill(
   }
 
   try {
-    Deno.removeSync(linkPath);
+    fs.unlinkSync(linkPath);
     return { skill: skillName, targetDir, action: "removed", message: currentTarget };
   } catch (error) {
     return {
@@ -318,10 +329,10 @@ export function findOrphans(skills: Skill[], targetDir: string): string[] {
   const orphans: string[] = [];
 
   try {
-    for (const entry of Deno.readDirSync(targetDir)) {
-      if (!entry.isSymlink || known.has(entry.name)) continue;
-      const target = Deno.readLinkSync(join(targetDir, entry.name));
-      if (target.includes(join("_other", "skills"))) orphans.push(entry.name);
+    for (const entry of fs.readdirSync(targetDir, { withFileTypes: true })) {
+      if (!entry.isSymbolicLink() || known.has(entry.name)) continue;
+      const target = fs.readlinkSync(path.join(targetDir, entry.name));
+      if (target.includes(path.join("_other", "skills"))) orphans.push(entry.name);
     }
   } catch {
     // target dir does not exist yet

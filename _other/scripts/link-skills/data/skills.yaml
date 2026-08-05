@@ -1,11 +1,11 @@
 # link-skills configuration
 #
-# This file is the source of truth. `just link-all` makes the repo match it:
+# This file is the source of truth. `vp run skills:all` makes the repo match it:
 # skills set to `true` get a symlink, skills set to `false` have their symlink
 # removed. Only symlinks pointing into _other/skills are ever removed — a real
 # file or directory in the way is always left alone.
 #
-# Run `just check` to preview changes without writing anything.
+# Run `vp run skills:check` to preview changes without writing anything.
 
 # Where symlinks are created. Set `enabled: false` to leave a tool untouched.
 targets:
