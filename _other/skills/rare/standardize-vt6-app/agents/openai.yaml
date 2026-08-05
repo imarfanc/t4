@@ -1,4 +1,0 @@
-interface:
-  display_name: "Standardize vt6 App"
-  short_description: "Standardize a vt6 app's layout, marker, and dependencies"
-  default_prompt: "Use $standardize-vt6-app to standardize this vt6 app while preserving its behavior."

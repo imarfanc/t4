@@ -16,6 +16,7 @@
   "material-icon-theme.activeIconPack": "none",
   "material-icon-theme.folders.associations": {
     "rare": "r",
+    "git2": "git",
     ".codex": "Other",
     ".opencode": "Other",
     "ephemeral": "Temp",

@@ -158,7 +158,7 @@ function banner(): void {
     : "defaults (no skills.yaml)";
 
   console.log();
-  console.log(`  ${bold(cyan("link-skills"))}  ${dim("t4 agent skill linker")}`);
+  console.log(`  ${bold(cyan("link-skills"))}  ${dim("repo agent skill linker")}`);
   console.log(
     `  ${dim(`${ICON.folder} ${shortTargetDir(sourceDir)}  →  ${targets.map((t) => t.label).join("  ")}`)}`,
   );

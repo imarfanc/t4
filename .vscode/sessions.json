@@ -1,18 +1,18 @@
 {
   "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v11/terminal-keeper.json",
   "theme": "tribe",
-  "active": "vt4",
+  "active": "default",
   "activateOnStartup": true,
   "keepExistingTerminals": false,
   "sessions": {
-    "vt4": [
+    "default": [
       {
-        "name": "vt5",
+        "name": "shell",
         "autoExecuteCommands": true,
         "icon": "smiley",
         "color": "terminal.ansiGreen",
         "commands": [
-          "echo hello vt5!"
+          "echo hello from repo-template!"
         ]
       },
       {

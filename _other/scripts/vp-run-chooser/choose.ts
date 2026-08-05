@@ -93,7 +93,7 @@ function banner(): void {
     home && repoRoot.startsWith(home) ? `~${repoRoot.slice(home.length)}` : repoRoot;
 
   console.log();
-  console.log(`  ${brandTitle("t4")}   ${dim("type to filter")}`);
+  console.log(`  ${brandTitle("repo-template")}   ${dim("type to filter")}`);
   console.log(`  ${mutedPath(shownPath)}`);
   console.log(`  ${dim("↑↓ move · enter runs · esc / ctrl+c / ctrl+d exits")}`);
   console.log();

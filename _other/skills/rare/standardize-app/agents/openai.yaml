@@ -1,0 +1,4 @@
+interface:
+  display_name: "Standardize App"
+  short_description: "Standardize an app's layout, manifest, and dependencies"
+  default_prompt: "Use $standardize-app to standardize this app while preserving its behavior."

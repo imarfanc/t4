@@ -41,4 +41,4 @@ skills:
   rare:
     here-now: false
     migrate-app: [cursor]
-    standardize-vt6-app: [agents]
+    standardize-app: [agents]

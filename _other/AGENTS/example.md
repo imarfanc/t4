@@ -1,30 +1,34 @@
-# example
+# example — a further-reading note
 
-Headings label folders in the sidebar without existing as directories, so
-regrouping the nav never moves a file or changes a URL. The root marker
-(`assembly/_section.yaml`) declares them in order; any `section` or `group`
-marker opts in by id:
+> **Sample.** This file exists to show the shape of an `_other/AGENTS/` note.
+> Replace it with a real one, or delete it.
 
-```yaml
-# assembly/_section.yaml (kind: root)
-headings:
-  - { id: system-test, name: System Test, order: 200 }
+`AGENTS.md` at the repo root stays short on purpose: an agent reads it in full
+at the start of every session, so it holds only what is true repo-wide. Anything
+deeper — one subsystem's rules, one convention's edge cases, one migration's
+history — lives here and is linked from **Further reading**.
 
-# assembly/Admin/tests/_section.yaml (kind: group)
-heading: system-test
-```
+## What makes a good note
 
-A heading only ever labels **siblings**, so it works at any depth — put it on a
-top-level section to split the sidebar root, or on a nested group to label a row
-inside a folder. The example above renders `SYSTEM TEST` above `Tests` *inside*
-`Administration`.
+Explain the **rule and its reasoning**, not the code. An agent can read the code;
+what it cannot recover is why the code is shaped that way, or which of two
+plausible approaches this repo already chose.
 
-Membership lives in the folder, not a central list, so there is one source of
-truth. A folder with no `heading`, or one naming a heading the root does not
-declare, renders ungrouped above the headings — never hidden. A heading whose
-folders all filter out under search emits no label. `heading` is ignored on
-`kind: root`, which is never rendered.
+State where a convention is implemented, so the note can be checked against
+reality:
 
-Implemented in `frontends/v1/app.ts` (`groupByHeading`) and
-`frontends/v3/app.js` (`applyHeadings`); **v2 does not support headings**.
-Remember to `deno task build` after changing v1 — it serves `dist/app.js`.
+> Implemented in `frontends/v1/app.ts` (`groupByHeading`). Remember to rebuild
+> after changing it — the server serves `dist/app.js`.
+
+Prefer one source of truth. If membership in a group lives in each folder rather
+than in a central list, say so — and say what happens when a folder names a
+group that does not exist (rendered ungrouped, never hidden). Failure modes are
+the most valuable thing a note can carry, because they are what an agent will
+otherwise rediscover by breaking something.
+
+## Conventions for these files
+
+- One topic per file, named after the topic.
+- Link it from **Further reading** in `AGENTS.md`, with a one-line description.
+- Keep it current. A stale note is worse than a missing one — an agent will
+  trust it.
