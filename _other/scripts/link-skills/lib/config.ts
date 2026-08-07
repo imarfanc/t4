@@ -2,15 +2,24 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 
-import type { Skill, Target } from "./skills.ts";
+import { type Skill, type Target, UNGROUPED } from "./skills.ts";
 
 /** Which targets a skill should be linked into. */
 export type SkillToggle = boolean | string[];
 
+export interface SkillEntry {
+  /** Grouping label, for display only — it never affects paths. */
+  group: string;
+  /** One-line summary, so pruning decisions can be made from this file alone. */
+  description: string;
+  /** Which targets to link into. */
+  targets: SkillToggle;
+}
+
 export interface Config {
   targets: Target[];
-  /** category -> skill name -> toggle */
-  skills: Record<string, Record<string, SkillToggle>>;
+  /** skill name -> entry */
+  skills: Record<string, SkillEntry>;
   /** Absolute path the config was read from, or null when using defaults. */
   path: string | null;
 }
@@ -87,56 +96,96 @@ function parseTargets(raw: unknown, repoRoot: string): Target[] {
   return targets;
 }
 
-function parseSkills(
-  raw: unknown,
-  targetIds: Set<string>,
-): Record<string, Record<string, SkillToggle>> {
+/** Validate a `targets:` value: true, false, or a list of known target ids. */
+function parseToggle(raw: unknown, where: string, targetIds: Set<string>): SkillToggle {
+  if (typeof raw === "boolean") return raw;
+
+  if (Array.isArray(raw)) {
+    return raw.map((entryId) => {
+      if (typeof entryId !== "string") fail(`${where}: target ids must be strings`);
+      if (!targetIds.has(entryId)) {
+        fail(
+          `${where}: unknown target "${entryId}" (known: ${[...targetIds].join(", ")})`,
+        );
+      }
+      return entryId;
+    });
+  }
+
+  fail(`${where}: expected true, false, or a list of target ids`);
+}
+
+/**
+ * Parse the flat `skills:` mapping. Each skill is either a full mapping —
+ *
+ *   git-flow:
+ *     group: git
+ *     description: Branch, PR and merge workflow
+ *     targets: [agents]
+ *
+ * — or the shorthand `git-flow: [agents]` / `true` / `false` when the group and
+ * description do not matter yet.
+ */
+function parseSkills(raw: unknown, targetIds: Set<string>): Record<string, SkillEntry> {
   if (raw === undefined || raw === null) return {};
   if (typeof raw !== "object" || Array.isArray(raw)) fail("`skills` must be a mapping");
 
-  const out: Record<string, Record<string, SkillToggle>> = {};
+  const out: Record<string, SkillEntry> = {};
 
-  for (const [category, entries] of Object.entries(raw as Record<string, unknown>)) {
-    if (entries === null) {
-      out[category] = {};
+  for (const [name, value] of Object.entries(raw as Record<string, unknown>)) {
+    const where = `skills.${name}`;
+
+    if (typeof value === "boolean" || Array.isArray(value)) {
+      out[name] = {
+        group: UNGROUPED,
+        description: "",
+        targets: parseToggle(value, where, targetIds),
+      };
       continue;
     }
-    if (typeof entries !== "object" || Array.isArray(entries)) {
-      fail(`\`skills.${category}\` must be a mapping of skill name to toggle`);
+
+    if (typeof value !== "object" || value === null) {
+      fail(
+        `${where}: expected a mapping with \`targets\`, or the shorthand ` +
+          `true / false / a list of target ids`,
+      );
     }
 
-    const group: Record<string, SkillToggle> = {};
+    const { group, description, targets } = value as Record<string, unknown>;
 
-    for (const [name, toggle] of Object.entries(entries as Record<string, unknown>)) {
-      if (typeof toggle === "boolean") {
-        group[name] = toggle;
-        continue;
-      }
-
-      if (Array.isArray(toggle)) {
-        const ids = toggle.map((entryId) => {
-          if (typeof entryId !== "string") {
-            fail(`skills.${category}.${name}: target ids must be strings`);
-          }
-          if (!targetIds.has(entryId)) {
-            fail(
-              `skills.${category}.${name}: unknown target "${entryId}" ` +
-                `(known: ${[...targetIds].join(", ")})`,
-            );
-          }
-          return entryId;
-        });
-        group[name] = ids;
-        continue;
-      }
-
-      fail(`skills.${category}.${name}: expected true, false, or a list of target ids`);
+    if (group !== undefined && typeof group !== "string") {
+      fail(`${where}: \`group\` must be a string`);
     }
+    if (description !== undefined && typeof description !== "string") {
+      fail(`${where}: \`description\` must be a string`);
+    }
+    if (targets === undefined) fail(`${where}: missing \`targets\``);
 
-    out[category] = group;
+    out[name] = {
+      group: group ?? UNGROUPED,
+      description: description ?? "",
+      targets: parseToggle(targets, `${where}.targets`, targetIds),
+    };
   }
 
   return out;
+}
+
+/**
+ * Fold config metadata into the skills discovered on disk. The config owns
+ * `group` outright; it may override a SKILL.md description but never erases
+ * one by omission.
+ */
+export function applyMetadata(config: Config, skills: Skill[]): Skill[] {
+  return skills.map((skill) => {
+    const entry = config.skills[skill.name];
+    if (!entry) return skill;
+    return {
+      ...skill,
+      group: entry.group,
+      description: entry.description || skill.description,
+    };
+  });
 }
 
 /** Read data/skills.yaml, falling back to sensible defaults when absent. */
@@ -185,30 +234,21 @@ function isENOENT(error: unknown): boolean {
  * pinned in YAML.
  */
 export function isEnabled(config: Config, skill: Skill, target: Target): boolean {
-  const toggle = config.skills[skill.category]?.[skill.name];
-  if (toggle === undefined) return true;
-  if (typeof toggle === "boolean") return toggle;
-  return toggle.includes(target.id);
+  const entry = config.skills[skill.name];
+  if (entry === undefined) return true;
+  if (typeof entry.targets === "boolean") return entry.targets;
+  return entry.targets.includes(target.id);
 }
 
 /** Skills on disk that the config does not mention, so they can be reported. */
 export function unpinnedSkills(config: Config, skills: Skill[]): Skill[] {
-  return skills.filter(
-    (skill) => config.skills[skill.category]?.[skill.name] === undefined,
-  );
+  return skills.filter((skill) => config.skills[skill.name] === undefined);
 }
 
 /** Skills listed in the config that no longer exist on disk. */
 export function missingSkills(config: Config, skills: Skill[]): string[] {
-  const onDisk = new Set(skills.map((s) => `${s.category}/${s.name}`));
-  const missing: string[] = [];
-
-  for (const [category, entries] of Object.entries(config.skills)) {
-    for (const name of Object.keys(entries)) {
-      const key = `${category}/${name}`;
-      if (!onDisk.has(key)) missing.push(key);
-    }
-  }
-
-  return missing.sort();
+  const onDisk = new Set(skills.map((s) => s.name));
+  return Object.keys(config.skills)
+    .filter((name) => !onDisk.has(name))
+    .sort();
 }

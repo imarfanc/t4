@@ -10,16 +10,31 @@ conventions that hold them together.
 
 ## Using this as a template
 
+```sh
+pnpm install                         # nothing works before this
+<runner> run template:reset          # preview what is sample content
+<runner> run template:reset:apply    # strip it
+```
+
+`template:reset` clears the placeholder git history, the worked branch record,
+and the sample skills, keeping every file's structure. What counts as sample is
+declared in `_other/scripts/template-reset/data/template.yaml`, not guessed.
+
+What it deliberately leaves to you:
+
 1. Rename: `package.json` `name`, this heading, `README.md`, and the brand
    strings in `_other/scripts/*/`.
 2. Replace the placeholder scripts in `package.json` (`dev`, `start`, `browser`,
    `public`, `build:auth`) — they exit 1 on purpose — and describe them in
-   `_other/scripts/vp-run-chooser/tasks.yaml`.
+   `_other/scripts/vp-run-chooser/tasks.yaml`. Delete its `template` group once
+   you are done, along with `_other/scripts/template-reset/`.
 3. Prune skills you will not use in
-   `_other/scripts/link-skills/data/skills.yaml`, then run `vp run skills:all`.
-   The `rare/` skills are marked as samples.
-4. Clear the sample content in `_other/git/` and `_other/AGENTS/example.md`.
-5. Point `.vscode/sessions.json` at your own terminal setup.
+   `_other/scripts/link-skills/data/skills.yaml` — each carries a one-line
+   description — then run `<runner> run skills:all`.
+4. Point `.vscode/sessions.json` at your own terminal setup.
+
+The full procedure, including dropping `_other/` into a repo that already
+exists, is [`_other/README.md`](_other/README.md).
 
 ## Layout
 
@@ -31,31 +46,46 @@ conventions that hold them together.
 | `.cursor/`   | Cursor settings, plans, MCP example, and skill symlinks                    |
 | `.vscode/`   | Editor settings, recommended extensions, terminal sessions                 |
 
+The folder-by-folder breakdown of `_other/` lives in `_other/AGENTS/OTHER.md`.
+
 Nothing under `_other/` ships, is imported by application code, or is a
 deliverable. Deleting it must never break a build.
 
 ## Tasks
 
-Repo scripts live in `package.json`. Run `vp run choose` for the grouped
-searchable picker, or `vp run <name>` for one task. Built-in quality tools:
-`vp fmt`, `vp lint`, `vp check`. Group layout:
-`_other/scripts/vp-run-chooser/tasks.yaml`. Skill symlinks: `vp run skills`
+Repo scripts live in `package.json`. Run `<runner> run choose` for the grouped
+searchable picker, or `<runner> run <name>` for one task. Group layout:
+`_other/scripts/vp-run-chooser/tasks.yaml`. Skill symlinks: `<runner> run skills`
 (see `_other/scripts/link-skills/docs/README.md`).
+
+**`<runner>` is `vp` (vite-plus) today.** Docs write `<runner>` rather than a
+runner name so that swapping to bun or deno is a handful of known edits instead
+of a repo-wide find-and-replace. `npm run <task>` is equivalent for everything
+except `vp fmt`, `vp lint`, and `vp check`, which have no `package.json` entry.
+See `_other/AGENTS/RUNNER.md` — it is the only file that names a runner.
 
 ## Conventions
 
-- Commits use the `git-commit-ascii` format — two emojis, an action word, and a
-  body explaining *why*. Branch and PR work goes through `git-flow`.
+- Commits use two formats: the full `git-commit-ascii` format — two emojis, an
+  action word, a banner and change table — for anything someone will want the
+  reasoning for later, and a one-line light format for routine work. Both are in
+  `_other/AGENTS/GIT.md`. Branch and PR work goes through `git-flow`.
 - Notable branches and checkpoints get written up in `_other/git/`.
 - Every release gets two write-ups in `_other/changelog/` — a technical
   changelog and a blog post — indexed from the root `CHANGELOG.md`.
-- Skills are edited once in `_other/skills/` and linked out; never edit a
-  symlinked copy under `.claude/`, `.cursor/`, or `.agents/`.
+- Skills live flat in `_other/skills/` and are linked out; grouping is metadata
+  in `skills.yaml`, not directories. Never edit a symlinked copy under
+  `.claude/`, `.cursor/`, or `.agents/`.
+- Empty folders are held open with `.gitkeep`. Sample content is marked in-file
+  with `<!-- template:sample -->` and registered in `template.yaml` — never
+  leave a placeholder unregistered.
 
 ## Further reading
 
-- `_other/` folder purpose and script conventions — `_other/AGENTS/OTHER.md`
-- Git history records and commit style — `_other/AGENTS/GIT.md`
+- `_other/` purpose, and how to adapt it to a new repo — `_other/README.md`
+- `_other/` folder table and script conventions — `_other/AGENTS/OTHER.md`
+- Git history records and both commit formats — `_other/AGENTS/GIT.md`
+- What `<runner>` is, and how to swap it — `_other/AGENTS/RUNNER.md`
 - Release notes, twice per release — `_other/changelog/CHANGELOG-INFO.md`
 - The skill library and how linking works — `_other/AGENTS/SKILLS.md`
-- Shape of a further-reading note (sample) — `_other/AGENTS/example.md`
+- Shape of a further-reading note — `_other/AGENTS/templates/further-reading-note.md`

@@ -1,7 +1,8 @@
-# example — a further-reading note
+# &lt;topic&gt; — a further-reading note
 
-> **Sample.** This file exists to show the shape of an `_other/AGENTS/` note.
-> Replace it with a real one, or delete it.
+> **Template, not content.** Copy this file to `_other/AGENTS/<topic>.md` and
+> write over it. Leave the original here — like `_other/changelog/templates/`,
+> this directory holds formats, so `template:reset` never touches it.
 
 `AGENTS.md` at the repo root stays short on purpose: an agent reads it in full
 at the start of every session, so it holds only what is true repo-wide. Anything

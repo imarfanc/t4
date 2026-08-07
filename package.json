@@ -17,7 +17,10 @@
     "skills:check": "node _other/scripts/link-skills/link-skills.ts --dry-run",
     "skills:prune": "node _other/scripts/link-skills/link-skills.ts --prune",
     "skills:links": "bash _other/scripts/link-skills/links.sh",
-    "skills:config": "sh -c '${EDITOR:-vi} _other/scripts/link-skills/data/skills.yaml'"
+    "skills:config": "sh -c '${EDITOR:-vi} _other/scripts/link-skills/data/skills.yaml'",
+    "template:reset": "node _other/scripts/template-reset/template-reset.ts",
+    "template:reset:apply": "node _other/scripts/template-reset/template-reset.ts --apply",
+    "template:config": "sh -c '${EDITOR:-vi} _other/scripts/template-reset/data/template.yaml'"
   },
   "devDependencies": {
     "@iconify-json/logos": "1.2.4",

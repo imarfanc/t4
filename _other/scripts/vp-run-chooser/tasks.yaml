@@ -1,7 +1,7 @@
-# Task groups for `vp run choose`. Names must match package.json scripts.
+# Task groups for `<runner> run choose`. Names must match package.json scripts.
 # Ungrouped scripts appear under "other" at the end.
 
-order: [run, check, tools]
+order: [run, check, tools, template]
 
 groups:
   run:
@@ -22,3 +22,10 @@ groups:
     skills:prune: Report stale links and config drift
     skills:links: List every symlink in the repo
     skills:config: Edit skills.yaml in $EDITOR
+
+  # Only useful once, on a fresh copy of the template. Delete this group after
+  # adapting the repo — along with the scripts and _other/scripts/template-reset.
+  template:
+    template:reset: Preview stripping the template's sample content
+    template:reset:apply: Strip the template's sample content
+    template:config: Edit template.yaml in $EDITOR

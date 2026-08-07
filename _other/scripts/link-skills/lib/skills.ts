@@ -4,11 +4,18 @@ import path from "node:path";
 export interface Skill {
   /** Directory name, also the symlink name created in each target. */
   name: string;
-  /** Parent folder under _other/skills, e.g. "_common" or "_r". */
-  category: string;
+  /**
+   * Grouping label, for display and for reasoning about the library. Comes
+   * from `group:` in skills.yaml — not from disk — so re-grouping is a
+   * one-line config edit rather than a directory move plus relink.
+   */
+  group: string;
   /** Absolute path to the skill directory. */
   sourcePath: string;
-  /** Description from SKILL.md frontmatter, if present. */
+  /**
+   * One-line summary. Taken from `description:` in skills.yaml when present,
+   * otherwise from the SKILL.md frontmatter.
+   */
   description: string;
 }
 
@@ -93,56 +100,79 @@ function readDescription(skillDir: string): string {
 }
 
 /**
- * Discover every skill directory (one containing SKILL.md) grouped by its
- * parent folder under `sourceDir`. Categories come from disk rather than a
- * hard-coded list, so adding a new group needs no code change.
+ * Discover every skill directory directly under `sourceDir`. A directory is a
+ * skill when it contains a SKILL.md; anything else is ignored, so notes and
+ * scratch folders can live alongside without confusing the linker.
+ *
+ * The layout is deliberately flat. Grouping is metadata in skills.yaml, which
+ * means changing how the library is organised never breaks a symlink.
  */
 export function discoverSkills(sourceDir: string): Skill[] {
   const skills: Skill[] = [];
 
-  let categories: string[];
+  let entries: fs.Dirent[];
   try {
-    categories = fs
-      .readdirSync(sourceDir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() || entry.isSymbolicLink())
-      .map((entry) => entry.name)
-      .sort();
+    entries = fs.readdirSync(sourceDir, { withFileTypes: true });
   } catch {
     return skills;
   }
 
-  for (const category of categories) {
-    const categoryDir = path.join(sourceDir, category);
+  for (const entry of entries) {
+    if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
 
-    let entries: fs.DirEntry[];
+    const sourcePath = path.join(sourceDir, entry.name);
     try {
-      entries = fs.readdirSync(categoryDir, { withFileTypes: true });
+      fs.statSync(path.join(sourcePath, "SKILL.md"));
     } catch {
       continue;
     }
 
-    for (const entry of entries) {
-      if (!entry.isDirectory() && !entry.isSymbolicLink()) continue;
+    skills.push({
+      name: entry.name,
+      group: UNGROUPED,
+      sourcePath,
+      description: readDescription(sourcePath),
+    });
+  }
 
-      const sourcePath = path.join(categoryDir, entry.name);
-      try {
-        fs.statSync(path.join(sourcePath, "SKILL.md"));
-      } catch {
-        continue;
+  return skills.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Group label used for skills the config does not place in a group. */
+export const UNGROUPED = "ungrouped";
+
+/**
+ * Nested skill directories are the pre-flatten layout. Detecting them lets the
+ * CLI say what to do instead of silently finding nothing.
+ */
+export function findNestedSkills(sourceDir: string): string[] {
+  const nested: string[] = [];
+
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(sourceDir, { withFileTypes: true });
+  } catch {
+    return nested;
+  }
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const dir = path.join(sourceDir, entry.name);
+    if (fs.existsSync(path.join(dir, "SKILL.md"))) continue;
+
+    try {
+      for (const child of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!child.isDirectory()) continue;
+        if (fs.existsSync(path.join(dir, child.name, "SKILL.md"))) {
+          nested.push(`${entry.name}/${child.name}`);
+        }
       }
-
-      skills.push({
-        name: entry.name,
-        category,
-        sourcePath,
-        description: readDescription(sourcePath),
-      });
+    } catch {
+      // unreadable directory — nothing to report
     }
   }
 
-  return skills.sort((a, b) =>
-    a.category.localeCompare(b.category) || a.name.localeCompare(b.name)
-  );
+  return nested.sort();
 }
 
 /** The relative path a symlink at `linkDir/<name>` should point at. */

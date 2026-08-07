@@ -1,0 +1,57 @@
+# template-reset configuration
+#
+# What in this repo is *sample content* shipped to show the shape of a thing,
+# as opposed to structure worth keeping. `<runner> run template:reset` reads
+# this file; without it, deciding what is a placeholder is guesswork, which is
+# exactly the guessing this tool exists to remove.
+#
+# Preview with `<runner> run template:reset` (dry run by default).
+# Apply with `<runner> run template:reset:apply`.
+
+# Files whose sample content sits below a `<!-- template:sample -->` marker.
+# Everything above the marker is kept; the marker and everything after it is
+# replaced with a short placeholder line. A file listed here with no marker is
+# reported as an error rather than silently skipped.
+truncate:
+  - path: _other/git/main.md
+    placeholder: No commits recorded yet. Generate from `git log` — see `../AGENTS/GIT.md`.
+
+  - path: _other/git/main-history.md
+    placeholder: No lines of development recorded yet. See `../AGENTS/GIT.md`.
+
+  - path: _other/git/checkpoints.md
+    placeholder: No checkpoints yet.
+
+  - path: _other/git/custom-commits.md
+    placeholder: No commit records yet.
+
+# Files and directories deleted outright — wholly sample, with no structure
+# worth preserving.
+delete:
+  - path: _other/git/branches/feat-example.md
+    why: Worked example of a branch record; write your own when a branch merges.
+
+  - path: _other/skills/here-now
+    why: Sample skill.
+
+  - path: _other/skills/migrate-app
+    why: Sample skill.
+
+  - path: _other/skills/standardize-app
+    why: Sample skill.
+
+# Deleting a skill directory leaves its entry in skills.yaml pointing at
+# nothing. Rather than edit that file mechanically, template-reset names the
+# keys to remove and leaves the edit to you; `<runner> run skills:check` will
+# also report them as drift until they are gone.
+skills_config: _other/scripts/link-skills/data/skills.yaml
+
+# Reminders printed after a run. These are the steps a person must make
+# judgement calls on, so the tool will not attempt them.
+followups:
+  - Rename `package.json` `name`, the heading in `AGENTS.md`, and `README.md`.
+  - Replace the placeholder `package.json` scripts — they exit 1 on purpose.
+  - Describe your real scripts in `_other/scripts/vp-run-chooser/tasks.yaml`.
+  - Point `.vscode/sessions.json` at your own terminal setup.
+  - Prune remaining skills in `skills.yaml`, then run `<runner> run skills:all`.
+  - Write the adaptation record — see step 8 of `_other/README.md`.

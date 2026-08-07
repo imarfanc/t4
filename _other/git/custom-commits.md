@@ -1,5 +1,10 @@
 # custom git commits
 
+Hand-written records of individual commits worth keeping the reasoning for.
+One entry each, newest last. See [`../AGENTS/GIT.md`](../AGENTS/GIT.md).
+
+<!-- template:sample -->
+
 ## custom commit 1
 
 - 2026.8.4

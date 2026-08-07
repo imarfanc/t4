@@ -1,27 +1,28 @@
 # link-skills
 
-Symlinks skill folders from `_other/skills/<category>/<skill>` into
-`.agents/skills/`, `.claude/skills/` and `.cursor/skills/`, so one copy of a
-skill serves every agent tool.
+Symlinks skill folders from `_other/skills/<skill>` into `.agents/skills/`,
+`.claude/skills/` and `.cursor/skills/`, so one copy of a skill serves every
+agent tool.
 
-Requires [Vite+](https://viteplus.dev/) (`vp`) — a new Mac with Xcode and `vp`
-is enough. From the repo root run `vp install` once, then:
+Install dependencies first (`pnpm install`) — nothing runs before that.
+`<runner>` is `vp` ([Vite+](https://viteplus.dev/)) today; see
+[RUNNER.md](../../../AGENTS/RUNNER.md).
 
 ```bash
-vp run choose          # interactive task picker (all repo scripts)
-vp run skills           # interactive: choose targets, then skills
-vp run skills:config    # edit the toggles in $EDITOR
-vp run skills:check     # preview — show what would change, write nothing
-vp run skills:all       # apply the config exactly, no prompts
-vp run skills:prune     # report stale links and config drift
-vp run skills:links     # list every symlink in the repo
+<runner> run choose          # interactive task picker (all repo scripts)
+<runner> run skills           # interactive: choose targets, then skills
+<runner> run skills:config    # edit the toggles in $EDITOR
+<runner> run skills:check     # preview — show what would change, write nothing
+<runner> run skills:all       # apply the config exactly, no prompts
+<runner> run skills:prune     # report stale links and config drift
+<runner> run skills:links     # list every symlink in the repo
 ```
 
-Built-in quality tools (no script needed): `vp fmt`, `vp lint`, `vp check`.
+Built-in quality tools (no script needed): `vp fmt`, `vp lint`, `vp check` (runner-specific — see [RUNNER.md](../../../AGENTS/RUNNER.md)).
 
 ## Toggling skills
 
-[`data/skills.yaml`](../data/skills.yaml) is the source of truth. `vp run skills:all`
+[`data/skills.yaml`](../data/skills.yaml) is the source of truth. `<runner> run skills:all`
 makes the repo match it.
 
 ```yaml
@@ -63,8 +64,8 @@ in interactive mode, confirmed before anything is written.
 
 ```text
 _other/scripts/link-skills/
-├── links.sh           # list symlinks (vp run skills:links)
-├── link-skills.ts     # CLI and interactive UI (vp node)
+├── links.sh           # list symlinks (<runner> run skills:links)
+├── link-skills.ts     # CLI and interactive UI
 ├── lib/
 │   ├── skills.ts      # discovery and symlink logic (no UI)
 │   └── config.ts      # skills.yaml parsing and validation
@@ -76,12 +77,16 @@ _other/scripts/link-skills/
 `link-skills.ts` owns every bit of rendering. Keeping them apart is what makes
 the linking behavior testable without a terminal.
 
-## Renaming a category
+## Grouping
 
-Category folders under `_other/skills/` are discovered from disk, so renaming
-one needs no code change — but the keys under `skills:` in `skills.yaml` must be
-renamed to match, or every skill in it reads as "not on disk". Run `vp run skills:links`
-afterwards to confirm nothing is left dangling.
+`_other/skills/` is flat — one directory per skill. Grouping is the `group:`
+field in `skills.yaml` and affects display only, never a path, so re-grouping
+the library never touches a symlink. Groups are free-form; a skill with no
+`group` shows as `ungrouped`.
+
+Skills nested one level deeper are the pre-flatten layout. The CLI detects them
+and says so rather than reporting an empty library: move each skill directory up
+into `_other/skills/` and give it a `group:`.
 
 ## Terminal font
 

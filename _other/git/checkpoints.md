@@ -7,6 +7,8 @@ changelog.
 
 ---
 
+<!-- template:sample -->
+
 ## 2026-07-31 — sample checkpoint
 
 - **In flight:** skill symlinking (`vp run skills`) working across all three

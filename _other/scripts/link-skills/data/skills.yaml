@@ -1,11 +1,12 @@
 # link-skills configuration
 #
-# This file is the source of truth. `vp run skills:all` makes the repo match it:
-# skills set to `true` get a symlink, skills set to `false` have their symlink
-# removed. Only symlinks pointing into _other/skills are ever removed — a real
-# file or directory in the way is always left alone.
+# This file is the source of truth. `<runner> run skills:all` makes the repo
+# match it: skills with targets get a symlink, skills set to `false` have their
+# symlink removed. Only symlinks pointing into _other/skills are ever removed —
+# a real file or directory in the way is always left alone.
 #
-# Run `vp run skills:check` to preview changes without writing anything.
+# Run `<runner> run skills:check` to preview changes without writing anything.
+# `<runner>` is vite-plus (`vp`) today — see _other/AGENTS/RUNNER.md.
 
 # Where symlinks are created. Set `enabled: false` to leave a tool untouched.
 targets:
@@ -21,24 +22,51 @@ targets:
     path: .cursor/skills
     enabled: true
 
-# Per-skill toggles, grouped by the folder under _other/skills.
+# Every skill in _other/skills, one entry each. The directory layout is flat;
+# `group` is the only grouping, which means re-organising the library is an edit
+# here rather than a directory move plus a relink.
 #
-#   <skill>: true              link into every enabled target
-#   <skill>: false             remove the symlink from every target
-#   <skill>: [claude, cursor]  link into these targets only, remove from others
+#   group        display label — free-form, invent one when none fits
+#   description  one line, so this file alone is enough to decide what to prune
+#   targets      true (everywhere) | false (nowhere) | [ids] (these only)
 #
-# Skills found on disk but missing here are treated as `true` and reported so
-# you can pin them explicitly.
+# Shorthand `<skill>: [claude]` is accepted when group and description do not
+# matter yet. Skills found on disk but missing here are treated as enabled
+# everywhere and reported, so a newly added skill works before it is pinned.
 skills:
-  common:
-    frontend-design: [claude]
-    git-commit-ascii: [claude]
-    git-flow: [agents]
+  frontend-design:
+    group: ui
+    description: Visual direction and typography for new or reshaped interfaces
+    targets: [claude]
 
-  other:
-    ego-browser: [cursor]
+  git-commit-ascii:
+    group: git
+    description: Full commit format — two emojis, action word, banner, change table
+    targets: [claude]
 
-  rare:
-    here-now: false
-    migrate-app: [cursor]
-    standardize-app: [agents]
+  git-flow:
+    group: git
+    description: Branch, PR and merge workflow with the current git state shown first
+    targets: [agents]
+
+  ego-browser:
+    group: browser
+    description: Browser automation that accumulates per-site learnings and tools
+    targets: [cursor]
+
+  # Sample skills — these ship with the template to show the shape of a skill
+  # library. `<runner> run template:reset` removes them.
+  here-now:
+    group: sample
+    description: Sample — publishes a location/status note; template demo only
+    targets: false
+
+  migrate-app:
+    group: sample
+    description: Sample — moves an app between repos; template demo only
+    targets: [cursor]
+
+  standardize-app:
+    group: sample
+    description: Sample — normalises an app's layout and task recipes; template demo only
+    targets: [agents]

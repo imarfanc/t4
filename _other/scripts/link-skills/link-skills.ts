@@ -7,6 +7,7 @@ import tty from "node:tty";
 import pc from "picocolors";
 
 import {
+  applyMetadata,
   type Config,
   CONFIG_RELATIVE_PATH,
   isEnabled,
@@ -16,6 +17,7 @@ import {
 } from "./lib/config.ts";
 import {
   discoverSkills,
+  findNestedSkills,
   findOrphans,
   findRepoRoot,
   inspectLink,
@@ -41,6 +43,11 @@ const ICON = {
   keyboard: "\u{F030C}", // 󰌌
 } as const;
 
+// The task runner this repo uses today. Swapping to bun or deno means editing
+// this line and the `scripts` block in package.json — nothing else in the CLI
+// hard-codes a runner name. See _other/AGENTS/RUNNER.md.
+const RUNNER = "vp";
+
 const { values: flags } = parseArgs({
   args: process.argv.slice(2),
   options: {
@@ -63,10 +70,10 @@ Configuration lives in ${bold(CONFIG_RELATIVE_PATH)} and is the source of
 truth: skills toggled off there have their symlinks removed.
 
 ${bold("Usage")}
-  vp run skills             Interactive picker
-  vp run skills:all         Apply the config exactly, no prompts
-  vp run skills:check       Preview changes, write nothing
-  vp run skills:links       List every symlink in the repo
+  ${RUNNER} run skills             Interactive picker
+  ${RUNNER} run skills:all         Apply the config exactly, no prompts
+  ${RUNNER} run skills:check       Preview changes, write nothing
+  ${RUNNER} run skills:links       List every symlink in the repo
 
 ${bold("Options")}
   -a, --all       Apply the config without prompting
@@ -85,7 +92,7 @@ const isInteractive = tty.isatty(0) && tty.isatty(1);
 
 const repoRoot = findRepoRoot();
 const sourceDir = skillsSourceDir(repoRoot);
-const skills = discoverSkills(sourceDir);
+const discovered = discoverSkills(sourceDir);
 
 let config: Config;
 try {
@@ -97,8 +104,22 @@ try {
 
 const targets = config.targets;
 
+// Group and description live in skills.yaml, so they are folded in after the
+// config loads rather than being read off the directory tree.
+const skills = applyMetadata(config, discovered);
+
 if (skills.length === 0) {
   console.error(`${red(ICON.error)} No skills found under ${dim(sourceDir)}`);
+
+  const nested = findNestedSkills(sourceDir);
+  if (nested.length > 0) {
+    console.error(
+      `\n  ${yellow(ICON.warn)} Found skills one level deeper: ${nested.join(", ")}\n` +
+        `  The library is flat now — move each skill directory up into ` +
+        `${dim("_other/skills/")} and set its ${bold("group:")} in skills.yaml.\n`,
+    );
+  }
+
   process.exit(1);
 }
 
@@ -135,14 +156,18 @@ function paintCell(skill: Skill, target: Target): string {
 }
 
 function statusTable(skillList: Skill[], targetList: Target[]): string {
+  const byGroup = [...skillList].sort((a, b) =>
+    a.group.localeCompare(b.group) || a.name.localeCompare(b.name)
+  );
+
   return formatTable({
     headers: [
-      bold("Category"),
+      bold("Group"),
       bold("Skill"),
       ...targetList.map((t) => bold(t.label)),
     ],
-    rows: skillList.map((skill) => [
-      dim(skill.category),
+    rows: byGroup.map((skill) => [
+      dim(skill.group),
       skill.name,
       ...targetList.map((target) => paintCell(skill, target)),
     ]),
@@ -220,7 +245,7 @@ function reportDrift(): void {
   if (unpinned.length > 0) {
     console.log(
       `  ${yellow(ICON.warn)} not in skills.yaml (treated as on): ` +
-        unpinned.map((s) => `${s.category}/${s.name}`).join(", "),
+        unpinned.map((s) => s.name).join(", "),
     );
   }
 
@@ -316,7 +341,7 @@ function summaryOf(skill: Skill): string {
 const chosenSkillNames = await checkbox({
   message: `Which skills?  ${KEYS}`,
   choices: skills.map((skill) => ({
-    name: `${skill.name.padEnd(nameWidth)}${dim(skill.category.padEnd(10))}${summaryOf(skill)}`,
+    name: `${skill.name.padEnd(nameWidth)}${dim(skill.group.padEnd(10))}${summaryOf(skill)}`,
     value: skill.name,
     checked: needsWork(skill),
   })),

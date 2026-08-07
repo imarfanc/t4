@@ -8,6 +8,8 @@ Regenerate this index and the line files whenever you want a readable, greppable
 account of the repo that survives branch deletion. It is written by hand or by
 an agent from `git log`; nothing reads it automatically.
 
+<!-- template:sample -->
+
 - **Generated:** 2026-07-31
 - **Repo:** `repo-template` (`https://github.com/<you>/<repo>`)
 - **HEAD:** `0000000` (branch `main`, in sync with `origin/main`)

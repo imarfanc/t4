@@ -3,6 +3,8 @@
 Commits authored **directly on `main`** (its first-parent spine), excluding any
 merged feature branches.
 
+<!-- template:sample -->
+
 - **Role:** repository trunk / initial scaffold
 - **Tip:** `1111111` (2026-07-31) — branch `main`, active, in sync with `origin/main`
 - **Direct (non-merge) commits in this line:** 8
