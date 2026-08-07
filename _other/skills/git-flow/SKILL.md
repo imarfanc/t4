@@ -1,6 +1,6 @@
 ---
 name: "git-flow"
-description: "Graceful branch management — show the current git situation (branch, upstream, dirty files, ahead/behind, recent branches) and then offer concrete named options for creating a branch, opening a PR with gh, or merging one branch into another. Always merge with merge commits; never squash. Use this whenever the user mentions branching, \"new branch\", \"cut a branch\", \"merge this into main\", \"open a PR\", \"ship this\", \"start a feature\", cleaning up merged branches, or generally asks what to do next with their git state — even if they don't name a branch or say the word \"git\"."
+description: 'Graceful branch management — show the current git situation (branch, upstream, dirty files, ahead/behind, recent branches) and then offer concrete named options for creating a branch, opening a PR with gh, or merging one branch into another. Always merge with merge commits; never squash. Use this whenever the user mentions branching, "new branch", "cut a branch", "merge this into main", "open a PR", "ship this", "start a feature", cleaning up merged branches, or generally asks what to do next with their git state — even if they don''t name a branch or say the word "git".'
 ---
 
 # git-flow

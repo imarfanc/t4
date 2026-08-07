@@ -21,7 +21,7 @@ _other/skills/
 
 Grouping is metadata — the `group:` field in
 `_other/scripts/link-skills/data/skills.yaml` — not directories. That is a
-deliberate choice: a directory-based grouping has to be *right*, because
+deliberate choice: a directory-based grouping has to be _right_, because
 re-grouping means moving directories and relinking every symlink. Metadata
 grouping can be wrong cheaply, so it gets fixed instead of tolerated. Groups are
 free-form; invent one when none fits.
@@ -60,12 +60,12 @@ skills:
   git-flow:
     group: git
     description: Branch, PR and merge workflow, current state shown first
-    targets: [agents]        # these targets only
+    targets: [agents] # these targets only
 
   here-now:
     group: sample
     description: Sample — publishes a location note
-    targets: false           # remove the symlink everywhere
+    targets: false # remove the symlink everywhere
 ```
 
 `targets` takes `true` (every enabled target), `false` (nowhere), or a list.
@@ -101,15 +101,15 @@ so you can pin them; skills in the file but not on disk are reported too.
 
 ## Skills in this template
 
-| Skill | Group | What it does |
-| --- | --- | --- |
-| `frontend-design` | ui | Visual direction and typography for new UI |
-| `git-commit-ascii` | git | Full commit format: two emojis, action word, banner, change table |
-| `git-flow` | git | Reads real branch/upstream state, offers named next steps |
-| `ego-browser` | browser | Isolated browsing space for agents, with per-site learnings |
-| `here-now` | sample | Publishing helper (Python scripts) |
-| `migrate-app` | sample | Move an app in from another repo |
-| `standardize-app` | sample | Normalize one app's layout and manifest |
+| Skill              | Group   | What it does                                                      |
+| ------------------ | ------- | ----------------------------------------------------------------- |
+| `frontend-design`  | ui      | Visual direction and typography for new UI                        |
+| `git-commit-ascii` | git     | Full commit format: two emojis, action word, banner, change table |
+| `git-flow`         | git     | Reads real branch/upstream state, offers named next steps         |
+| `ego-browser`      | browser | Isolated browsing space for agents, with per-site learnings       |
+| `here-now`         | sample  | Publishing helper (Python scripts)                                |
+| `migrate-app`      | sample  | Move an app in from another repo                                  |
+| `standardize-app`  | sample  | Normalize one app's layout and manifest                           |
 
 The `sample` group is deliberately generic worked examples of repo-specific
 skills. `<runner> run template:reset` deletes all three; rewrite them for your

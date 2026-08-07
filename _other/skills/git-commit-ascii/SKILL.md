@@ -90,7 +90,7 @@ every time it's been tried. Pipe the rough table through the bundled script
 **verbatim**:
 
 ```bash
-python3 <skill-dir>/scripts/align_table.py <<'EOF'
+uv run --no-project <skill-dir>/scripts/align_table.py <<'EOF'
 | Area | What changed |
 | --- | --- |
 | 🔎 filter.ts | toLowerCase() applied to tag compare |

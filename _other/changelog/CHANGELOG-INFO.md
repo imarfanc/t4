@@ -19,7 +19,7 @@ exists, but the substance lives here.
 | `vX.Y-blog-post.md`  | Someone using the app | What's different, and why they'd care      |
 | `../../CHANGELOG.md` | Someone scanning      | Which release, roughly what, where to read |
 
-Both versioned files are written for the *same* release from the *same* commit
+Both versioned files are written for the _same_ release from the _same_ commit
 range. Neither is a summary of the other.
 
 Templates for both live in [`templates/`](templates/) — copy, rename, fill in.
@@ -97,10 +97,10 @@ The banner is a per-repo constant. Generate it once, keep it in
   version: `# v0.3.0 — Source View`.
 - A patch release usually needs neither file. If it needs one, it needs the
   changelog, not the post.
-- The release title is a noun phrase naming the theme — *Script Runbook*,
-  *Console Typography*, *Source View* — and is identical across both files and
+- The release title is a noun phrase naming the theme — _Script Runbook_,
+  _Console Typography_, _Source View_ — and is identical across both files and
   the root index.
-- The blog post title is free to be a sentence — *Read Before You Run* — as long
+- The blog post title is free to be a sentence — _Read Before You Run_ — as long
   as the subtitle carries the version.
 
 ## Correcting a past release

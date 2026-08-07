@@ -54,8 +54,8 @@ skills:
     description: Browser automation that accumulates per-site learnings and tools
     targets: [cursor]
 
-  # Sample skills — these ship with the template to show the shape of a skill
-  # library. `<runner> run template:reset` removes them.
+  # template:sample-skills:start
+  # Sample skills — template:init removes this whole registered block.
   here-now:
     group: sample
     description: Sample — publishes a location/status note; template demo only
@@ -70,3 +70,4 @@ skills:
     group: sample
     description: Sample — normalises an app's layout and task recipes; template demo only
     targets: [agents]
+  # template:sample-skills:end

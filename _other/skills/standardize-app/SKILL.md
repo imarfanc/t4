@@ -5,7 +5,7 @@ description: Standardize one existing app or package inside this repository with
 
 # Standardize an App
 
-> **Sample skill.** This is a worked example of a *repo-specific* skill — the
+> **Sample skill.** This is a worked example of a _repo-specific_ skill — the
 > kind that only makes sense inside one codebase. Rewrite the repository facts
 > below for your project, or delete this skill entirely.
 

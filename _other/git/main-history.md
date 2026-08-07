@@ -17,15 +17,15 @@ an agent from `git log`; nothing reads it automatically.
 
 ## Lines of development
 
-| File | Line | Commits | Base → Tip | Status |
-| --- | --- | --- | --- | --- |
-| [main.md](main.md) | `main` (trunk) | 8 | `0000000` → `1111111` | active trunk |
-| [branches/feat-example.md](branches/feat-example.md) | `feat/example` | 2 | `1111111` → `2222222` | merged (PR #1), deleted |
+| File                                                 | Line           | Commits | Base → Tip            | Status                  |
+| ---------------------------------------------------- | -------------- | ------- | --------------------- | ----------------------- |
+| [main.md](main.md)                                   | `main` (trunk) | 8       | `0000000` → `1111111` | active trunk            |
+| [branches/feat-example.md](branches/feat-example.md) | `feat/example` | 2       | `1111111` → `2222222` | merged (PR #1), deleted |
 
 ## Merges
 
-| Hash | Merged | Into | PR |
-| --- | --- | --- | --- |
-| `3333333` | `feat/example` | `main` | #1 |
+| Hash      | Merged         | Into   | PR  |
+| --------- | -------------- | ------ | --- |
+| `3333333` | `feat/example` | `main` | #1  |
 
 > Sample content. Regenerate from your own `git log` — see `_other/AGENTS/GIT.md`.

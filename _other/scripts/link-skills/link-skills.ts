@@ -156,16 +156,12 @@ function paintCell(skill: Skill, target: Target): string {
 }
 
 function statusTable(skillList: Skill[], targetList: Target[]): string {
-  const byGroup = [...skillList].sort((a, b) =>
-    a.group.localeCompare(b.group) || a.name.localeCompare(b.name)
+  const byGroup = [...skillList].sort(
+    (a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name),
   );
 
   return formatTable({
-    headers: [
-      bold("Group"),
-      bold("Skill"),
-      ...targetList.map((t) => bold(t.label)),
-    ],
+    headers: [bold("Group"), bold("Skill"), ...targetList.map((t) => bold(t.label))],
     rows: byGroup.map((skill) => [
       dim(skill.group),
       skill.name,
@@ -251,17 +247,13 @@ function reportDrift(): void {
 
   const missing = missingSkills(config, skills);
   if (missing.length > 0) {
-    console.log(
-      `  ${yellow(ICON.warn)} in skills.yaml but not on disk: ${missing.join(", ")}`,
-    );
+    console.log(`  ${yellow(ICON.warn)} in skills.yaml but not on disk: ${missing.join(", ")}`);
   }
 
   for (const target of targets) {
     const orphans = findOrphans(skills, target.path);
     if (orphans.length === 0) continue;
-    console.log(
-      `  ${yellow(ICON.warn)} ${target.label} has stale links: ${orphans.join(", ")}`,
-    );
+    console.log(`  ${yellow(ICON.warn)} ${target.label} has stale links: ${orphans.join(", ")}`);
   }
 }
 
@@ -283,12 +275,9 @@ if (applyConfig || !isInteractive) {
     process.exit(0);
   }
 
-  const results = reconcile(
-    skills,
-    targets,
-    (skill, target) => isEnabled(config, skill, target),
-    { dryRun },
-  );
+  const results = reconcile(skills, targets, (skill, target) => isEnabled(config, skill, target), {
+    dryRun,
+  });
   report(results, dryRun);
   reportDrift();
   process.exit(summarize(results).error > 0 ? 1 : 0);
@@ -332,9 +321,8 @@ function needsWork(skill: Skill): boolean {
 function summaryOf(skill: Skill): string {
   if (!skill.description) return "";
   const firstSentence = skill.description.split(/(?<=\.)\s/)[0];
-  const clipped = firstSentence.length > 60
-    ? `${firstSentence.slice(0, 57).trimEnd()}…`
-    : firstSentence;
+  const clipped =
+    firstSentence.length > 60 ? `${firstSentence.slice(0, 57).trimEnd()}…` : firstSentence;
   return dim(`  ${clipped}`);
 }
 
@@ -369,10 +357,11 @@ if (dryRun) {
 
 const removals = pending.filter((r) => r.action === "removed").length;
 const confirmed = await confirm({
-  message: removals > 0
-    ? `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}, ` +
-      `including ${removals} removal${removals === 1 ? "" : "s"}?`
-    : `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}?`,
+  message:
+    removals > 0
+      ? `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}, ` +
+        `including ${removals} removal${removals === 1 ? "" : "s"}?`
+      : `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}?`,
   default: removals === 0,
 });
 

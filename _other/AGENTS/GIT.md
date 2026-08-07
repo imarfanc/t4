@@ -63,7 +63,7 @@ as a diff. See `_other/skills/git-commit-ascii/SKILL.md`.
 The full format earns its cost on commits someone will read again in six months.
 Most commits are not that — bumping a dependency, fixing a typo, renaming a file
 — and there the banner is longer than the change. The light format keeps routine
-work cheap to commit, so that the full format keeps meaning *this one matters*.
+work cheap to commit, so that the full format keeps meaning _this one matters_.
 
 ```text
 emoji action(scope): description
@@ -71,9 +71,9 @@ emoji action(scope): description
 optional one-line why
 ```
 
-- **One emoji**, not two — the change *type*. Domain is already in the scope.
+- **One emoji**, not two — the change _type_. Domain is already in the scope.
 - **Description** imperative, lowercase, under ~60 characters.
-- **Body** at most one line, and only when the *why* is not obvious. No banner,
+- **Body** at most one line, and only when the _why_ is not obvious. No banner,
   no table, no paragraph.
 
 ```text
@@ -84,13 +84,13 @@ optional one-line why
 
 ### Choosing between them
 
-| Use the **full** format | Use the **light** format |
-| --- | --- |
-| New feature or capability | Dependency bumps, lockfile churn |
-| Bug fix with a non-obvious root cause | Typos, formatting, comment edits |
-| Refactor that changes how something is understood | Mechanical renames and moves |
-| Anything touching several areas at once | Single-file, single-purpose changes |
-| Anything you would want a history record for | Anything you would not |
+| Use the **full** format                           | Use the **light** format            |
+| ------------------------------------------------- | ----------------------------------- |
+| New feature or capability                         | Dependency bumps, lockfile churn    |
+| Bug fix with a non-obvious root cause             | Typos, formatting, comment edits    |
+| Refactor that changes how something is understood | Mechanical renames and moves        |
+| Anything touching several areas at once           | Single-file, single-purpose changes |
+| Anything you would want a history record for      | Anything you would not              |
 
 Two questions decide it: **would someone want the reasoning later?** and **does
 the change span more than one area?** A yes to either means the full format.

@@ -162,10 +162,10 @@ export function planReset(repoRoot: string, config: TemplateConfig): Plan {
     items.push(
       truncatedContent(text, rule.placeholder) === null
         ? {
-          path: rule.path,
-          action: "already-clean",
-          detail: `no ${SAMPLE_MARKER} — nothing to strip`,
-        }
+            path: rule.path,
+            action: "already-clean",
+            detail: `no ${SAMPLE_MARKER} — nothing to strip`,
+          }
         : { path: rule.path, action: "truncate", detail: "strip sample content below marker" },
     );
   }
@@ -302,7 +302,10 @@ export function unregisteredSamples(repoRoot: string, config: TemplateConfig): s
       if (covered.has(relative)) continue;
 
       try {
-        if (fs.readFileSync(absolute, "utf8").includes(SAMPLE_MARKER)) found.push(relative);
+        const text = fs.readFileSync(absolute, "utf8");
+        if (text.split(/\r?\n/).some((line) => line.trim() === SAMPLE_MARKER)) {
+          found.push(relative);
+        }
       } catch {
         // unreadable — nothing to report
       }

@@ -1,21 +1,13 @@
 # Task groups for `<runner> run choose`. Names must match package.json scripts.
 # Ungrouped scripts appear under "other" at the end.
 
-order: [run, check, tools, template]
+order: [check, tools, template]
 
 groups:
-  run:
-    dev: Launch the desktop window with hot reload
-    start: Launch the desktop window
-    browser: Launch the plain browser server
-    public: Launch with authentication switched off
-
   check:
-    test: Run the full test suite
-    test:quick: Run the tests only
+    check: Run formatting, linting, type checks, and local template health checks
 
   tools:
-    build:auth: Bundle the auth frontend
     skills: Link skills — interactive picker
     skills:all: Apply skills.yaml exactly, no prompts
     skills:check: Preview skill symlink changes
@@ -23,9 +15,9 @@ groups:
     skills:links: List every symlink in the repo
     skills:config: Edit skills.yaml in $EDITOR
 
-  # Only useful once, on a fresh copy of the template. Delete this group after
-  # adapting the repo — along with the scripts and _other/scripts/template-reset.
   template:
+    template:init: Name a new project and strip its sample content
+    template:check: Run local repository health checks
     template:reset: Preview stripping the template's sample content
     template:reset:apply: Strip the template's sample content
     template:config: Edit template.yaml in $EDITOR

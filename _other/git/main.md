@@ -12,9 +12,9 @@ merged feature branches.
 
 ## Commit summary
 
-| Hash | Date | Subject |
-| --- | --- | --- |
-| `1111111` | 2026-07-31 | ✓✓ checkpoint |
+| Hash      | Date       | Subject                                     |
+| --------- | ---------- | ------------------------------------------- |
+| `1111111` | 2026-07-31 | ✓✓ checkpoint                               |
 | `0000000` | 2026-07-30 | 🌱📦 launch(repo): initial project scaffold |
 
 ## Detailed log
@@ -28,16 +28,16 @@ merged feature branches.
 - **Author:** you <you@example.com>
 - **Subject:** 🌱📦 launch(repo): initial project scaffold
 
-| Area          | What changed                        |
-| ------------- | ----------------------------------- |
-| 🙈 .gitignore | baseline ignores for Node tooling   |
-| 📄 README.md  | add project title                   |
+| Area          | What changed                      |
+| ------------- | --------------------------------- |
+| 🙈 .gitignore | baseline ignores for Node tooling |
+| 📄 README.md  | add project title                 |
 
 First commit: a baseline `.gitignore` and a minimal README to seed the project.
 
- .gitignore | 11 +++++++++++
- README.md  |  1 +
- 2 files changed, 12 insertions(+)
+.gitignore | 11 +++++++++++
+README.md | 1 +
+2 files changed, 12 insertions(+)
 
 > Sample content, in the shape produced by the `git-commit-ascii` skill.
 > Regenerate from your own history — see `_other/AGENTS/GIT.md`.

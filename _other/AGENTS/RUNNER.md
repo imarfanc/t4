@@ -26,7 +26,7 @@ the repo; everything else routes through `scripts`.
 ## First run in a fresh clone
 
 ```bash
-pnpm install          # devEngines pins pnpm 11.20.0; it self-downloads
+pnpm install          # packageManager pins pnpm 11.20.0
 vp run choose         # or: npm run choose
 ```
 
@@ -34,17 +34,24 @@ Nothing works before the install — the scripts import `@inquirer/prompts`,
 `picocolors`, and `yaml`. An agent adapting this template should treat the
 install as step zero and not conclude the tooling is broken.
 
+Node 25 and newer do not bundle Corepack. When `pnpm` is missing, install it
+before the first run:
+
+```bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
 ## Swapping to bun or deno
 
 The runner name appears in exactly four kinds of place. Change these and the
 swap is done:
 
-| Where | What to change |
-| --- | --- |
-| This file | The **Today** section — name the new runner and its equivalents |
-| `package.json` `scripts` | The interpreter in each entry (`node X.ts` → `bun X.ts` / `deno run -A X.ts`) |
-| `_other/scripts/*/[tool].ts` | The `RUNNER` constant near the top of each CLI, used only in help text |
-| `package.json` `devEngines` / `devDependencies` | Drop `vite-plus`, declare the new toolchain |
+| Where                                               | What to change                                                                |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- |
+| This file                                           | The **Today** section — name the new runner and its equivalents               |
+| `package.json` `scripts`                            | The interpreter in each entry (`node X.ts` → `bun X.ts` / `deno run -A X.ts`) |
+| `_other/scripts/*/[tool].ts`                        | The `RUNNER` constant near the top of each CLI, used only in help text        |
+| `package.json` `packageManager` / `devDependencies` | Drop `vite-plus`, declare the new toolchain                                   |
 
 Prose in `AGENTS.md`, `_other/README.md`, and the script `docs/README.md` files
 says `<runner>` and needs no edit. That is the point of the placeholder — if you

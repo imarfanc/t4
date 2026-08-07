@@ -29,14 +29,21 @@ not repeated here — one table, one place to keep current.
 
 ## Adapting to a new repo
 
-Most of steps 2 and 3 are automated. `<runner> run template:reset` previews
-exactly what the template considers sample content and writes nothing; the
-prose below explains the parts that need judgement.
+Most of steps 2 and 3 are automated. `<runner> run template:init` names the
+project, strips registered sample content, cleans sample skill metadata, and
+reconciles the remaining links. The prose below explains the parts that still
+need judgement.
 
 ### 0. Install first
 
 ```bash
 pnpm install
+```
+
+If `pnpm` is missing, install it first:
+
+```bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -
 ```
 
 Nothing works before this — the scripts import `@inquirer/prompts`,
@@ -55,23 +62,25 @@ grep -rn "_other/" --include='*.ts' --include='*.tsx' --include='*.js' \
   --exclude-dir=_other
 ```
 
-The second command is the rule-1 check: any *shipping* file that reaches into
+The second command is the rule-1 check: any _shipping_ file that reaches into
 `_other/` is a violation. Such a file must be moved out, not deleted in place.
 
-### 2. Strip the sample content
+### 2. Initialize the project
 
 ```sh
-<runner> run template:reset          # preview
-<runner> run template:reset:apply    # do it
+<runner> run template:init
+# non-interactive: <runner> run template:init -- --name my-project --yes
 ```
 
-This clears the placeholder git history, the worked branch record, and the
-sample skills, while keeping every file's structure and explanation. What counts
-as sample is declared in `_other/scripts/template-reset/data/template.yaml` and
-marked in-file with `<!-- template:sample -->`, so nothing is guessed. Symlinks
-to deleted skills are cleaned up; their `skills.yaml` entries are named for you
-to remove in step 3. The run ends by listing the follow-ups it deliberately will
-not attempt.
+This updates the project identity in `package.json`, `README.md`, and
+`AGENTS.md`; clears the placeholder git history and worked branch record;
+removes sample skills and their `skills.yaml` entries; and reconciles the
+surviving skill links. What counts as sample is declared in
+`_other/scripts/template-reset/data/template.yaml` and marked in-file with
+`<!-- template:sample -->`, so nothing is guessed.
+
+The lower-level `<runner> run template:reset` remains available for previewing
+or applying only the registered sample-content portion.
 
 Anything the tool reports as carrying a sample marker but not registered in
 `template.yaml` should be fixed, not ignored — that is the one way this can
@@ -90,8 +99,9 @@ this decision can be made without opening seven `SKILL.md` files.
 ```
 
 Set `targets: false` to unlink a skill everywhere, or list target ids to narrow
-it. Only symlinks pointing into `_other/skills` are ever removed, so a real file
-in the way is never clobbered. Never edit a skill through its symlink in
+it. `template:init` has already removed the entries for sample skills. Only
+symlinks pointing into `_other/skills` are ever removed, so a real file in the
+way is never clobbered. Never edit a skill through its symlink in
 `.claude/`, `.cursor/`, or `.agents/` — edit the original and relink.
 
 ### 4. Reconcile with the host project
@@ -128,23 +138,26 @@ _other/scripts/<tool>/
 
 ### 6. Update the surfaces that point here
 
-Which of these you *edit* versus *create* depends on how the template arrived:
+Which of these you _edit_ versus _create_ depends on how the template arrived:
 
 **Copied wholesale** (this repo cloned and renamed) — the files exist; edit
 them:
 
 - Root `AGENTS.md` — layout table, further-reading list, template checklist.
   `CLAUDE.md` is a symlink to it; edit `AGENTS.md`, never the symlink.
-- `README.md` and `package.json` `name` — rename off the template.
-- `_other/scripts/vp-run-chooser/tasks.yaml` — describe the real scripts. The
-  placeholders in `package.json` exit 1 on purpose until replaced. Delete the
-  `template` group once the repo is adapted.
-- `.vscode/sessions.json` — point at the new project's terminal setup.
+- `README.md` — replace the sample description; `template:init` has already
+  updated its heading and the package name.
+- `_other/scripts/vp-run-chooser/tasks.yaml` — describe the real application
+  scripts after adding only the commands this project needs.
+- `.env.example` — add commented variable names, defaults, and descriptions;
+  never add real credentials.
+- `.vscode/sessions.json` — customize it only if shared project terminal tasks
+  would be useful; its default is intentionally generic.
 
 **Dropped into an existing repo** (`_other/` copied in alone) — several of
 these will not exist. Do not skip them; create them:
 
-- No root `AGENTS.md`? Create one, with a layout table for *this* repo and a
+- No root `AGENTS.md`? Create one, with a layout table for _this_ repo and a
   **Further reading** list linking into `_other/AGENTS/`. Use
   [`AGENTS/templates/further-reading-note.md`](AGENTS/templates/further-reading-note.md)
   for the notes themselves. Symlink `CLAUDE.md` to it.
@@ -160,6 +173,7 @@ these will not exist. Do not skip them; create them:
 ```sh
 <runner> run skills:check      # symlinks match skills.yaml, no drift reported
 <runner> run template:reset    # should report nothing left to strip
+<runner> run check             # code quality and local repository checks pass
 ```
 
 Then the rule-2 check, which is the one that actually matters:

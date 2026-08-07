@@ -13,8 +13,8 @@ person, present tense, no internal names.
 
 ## What's new in vX.Y
 
-| Area       | What's new |
-| ---------- | ---------- |
+| Area        | What's new |
+| ----------- | ---------- |
 | 🖥️ Area one |            |
 | 🎨 Area two |            |
 

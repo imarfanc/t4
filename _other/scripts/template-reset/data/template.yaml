@@ -49,9 +49,8 @@ skills_config: _other/scripts/link-skills/data/skills.yaml
 # Reminders printed after a run. These are the steps a person must make
 # judgement calls on, so the tool will not attempt them.
 followups:
-  - Rename `package.json` `name`, the heading in `AGENTS.md`, and `README.md`.
-  - Replace the placeholder `package.json` scripts — they exit 1 on purpose.
-  - Describe your real scripts in `_other/scripts/vp-run-chooser/tasks.yaml`.
-  - Point `.vscode/sessions.json` at your own terminal setup.
+  - Prefer `<runner> run template:init` for a fresh repo; it also handles naming and skill metadata.
+  - Add only the application scripts the project needs and describe them in `tasks.yaml`.
+  - Extend `.env.example` with commented variable names, never real credentials.
   - Prune remaining skills in `skills.yaml`, then run `<runner> run skills:all`.
   - Write the adaptation record — see step 8 of `_other/README.md`.

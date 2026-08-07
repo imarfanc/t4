@@ -1,9 +1,4 @@
-import {
-  getIconData,
-  stringToColor,
-  type IconifyIcon,
-  type RGBColor,
-} from "@iconify/utils";
+import { getIconData, stringToColor, type IconifyIcon, type RGBColor } from "@iconify/utils";
 import logos from "@iconify-json/logos/icons.json" with { type: "json" };
 import mdi from "@iconify-json/mdi/icons.json" with { type: "json" };
 import pc from "picocolors";

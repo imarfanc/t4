@@ -34,6 +34,12 @@ export function readPackageScripts(repoRoot: string): Record<string, string> {
   return pkg.scripts ?? {};
 }
 
+export function readPackageName(repoRoot: string): string {
+  const raw = fs.readFileSync(path.join(repoRoot, "package.json"), "utf8");
+  const pkg = JSON.parse(raw) as { name?: string };
+  return pkg.name ?? path.basename(repoRoot);
+}
+
 export interface TaskEntry {
   group: string;
   groupLabel: string;
@@ -78,8 +84,7 @@ export function loadTaskCatalog(repoRoot: string): TaskEntry[] {
 
   const other = Object.keys(scripts)
     .filter(
-      (name) =>
-        name !== PICKER_SCRIPT && !assigned.has(name) && !isSeparator(name, scripts[name]),
+      (name) => name !== PICKER_SCRIPT && !assigned.has(name) && !isSeparator(name, scripts[name]),
     )
     .sort();
 

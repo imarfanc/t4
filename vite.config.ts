@@ -7,4 +7,13 @@ import { defineConfig } from "vite-plus";
  * Built-in quality tools (no package.json script needed):
  *   vp fmt    vp lint    vp check
  */
-export default defineConfig({});
+export default defineConfig({
+  // These are function-expression snippets consumed by ego-browser, not
+  // standalone JavaScript programs, so Oxc should not parse them directly.
+  fmt: {
+    ignorePatterns: ["**/browser-tools/**"],
+  },
+  lint: {
+    ignorePatterns: ["**/browser-tools/**"],
+  },
+});

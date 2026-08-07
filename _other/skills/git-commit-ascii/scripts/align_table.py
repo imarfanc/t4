@@ -7,7 +7,7 @@ a rough markdown table from stdin, computes each cell's display width, and
 prints a properly padded version to stdout.
 
 Usage:
-    python3 align_table.py <<'EOF'
+    uv run --no-project align_table.py <<'EOF'
     | Area | What changed |
     | --- | --- |
     | 🔎 filter.ts | toLowerCase() applied to tag compare |

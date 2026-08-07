@@ -104,9 +104,7 @@ function parseToggle(raw: unknown, where: string, targetIds: Set<string>): Skill
     return raw.map((entryId) => {
       if (typeof entryId !== "string") fail(`${where}: target ids must be strings`);
       if (!targetIds.has(entryId)) {
-        fail(
-          `${where}: unknown target "${entryId}" (known: ${[...targetIds].join(", ")})`,
-        );
+        fail(`${where}: unknown target "${entryId}" (known: ${[...targetIds].join(", ")})`);
       }
       return entryId;
     });

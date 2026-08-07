@@ -26,13 +26,7 @@ export interface LinkStatus {
   currentTarget: string | null;
 }
 
-export type LinkAction =
-  | "created"
-  | "replaced"
-  | "removed"
-  | "ok"
-  | "skipped"
-  | "error";
+export type LinkAction = "created" | "replaced" | "removed" | "ok" | "skipped" | "error";
 
 export interface LinkResult {
   skill: string;

@@ -12,39 +12,38 @@ conventions that hold them together.
 
 ```sh
 pnpm install                         # nothing works before this
-<runner> run template:reset          # preview what is sample content
-<runner> run template:reset:apply    # strip it
+<runner> run template:init           # name the project and strip sample content
+<runner> run check                   # verify code quality and repository health
 ```
 
-`template:reset` clears the placeholder git history, the worked branch record,
-and the sample skills, keeping every file's structure. What counts as sample is
-declared in `_other/scripts/template-reset/data/template.yaml`, not guessed.
+`template:init` renames the project, clears the placeholder git history and
+worked branch record, removes the sample skills and their config, then
+reconciles the remaining links. What counts as sample is declared in
+`_other/scripts/template-reset/data/template.yaml`, not guessed.
 
 What it deliberately leaves to you:
 
-1. Rename: `package.json` `name`, this heading, `README.md`, and the brand
-   strings in `_other/scripts/*/`.
-2. Replace the placeholder scripts in `package.json` (`dev`, `start`, `browser`,
-   `public`, `build:auth`) — they exit 1 on purpose — and describe them in
-   `_other/scripts/vp-run-chooser/tasks.yaml`. Delete its `template` group once
-   you are done, along with `_other/scripts/template-reset/`.
-3. Prune skills you will not use in
+1. Replace this sample description and add only the application scripts the
+   project needs; describe them in `_other/scripts/vp-run-chooser/tasks.yaml`.
+2. Prune skills you will not use in
    `_other/scripts/link-skills/data/skills.yaml` — each carries a one-line
    description — then run `<runner> run skills:all`.
-4. Point `.vscode/sessions.json` at your own terminal setup.
+3. Extend `.env.example` with commented variable names, never real credentials.
+4. Customize `.vscode/sessions.json` only when the project needs shared terminal
+   tasks; the shipped session is deliberately generic.
 
 The full procedure, including dropping `_other/` into a repo that already
 exists, is [`_other/README.md`](_other/README.md).
 
 ## Layout
 
-| Path         | What it is                                                                 |
-| ------------ | -------------------------------------------------------------------------- |
-| `_other/`    | Non-shipping material — docs, skills, scripts, git records, checkpoints    |
-| `.agents/`   | Agent tool directory; `skills/` holds symlinks into `_other/skills`        |
-| `.claude/`   | Claude Code settings and skill symlinks                                    |
-| `.cursor/`   | Cursor settings, plans, MCP example, and skill symlinks                    |
-| `.vscode/`   | Editor settings, recommended extensions, terminal sessions                 |
+| Path       | What it is                                                              |
+| ---------- | ----------------------------------------------------------------------- |
+| `_other/`  | Non-shipping material — docs, skills, scripts, git records, checkpoints |
+| `.agents/` | Agent tool directory; `skills/` holds symlinks into `_other/skills`     |
+| `.claude/` | Claude Code settings and skill symlinks                                 |
+| `.cursor/` | Cursor settings, plans, MCP example, and skill symlinks                 |
+| `.vscode/` | Editor settings, recommended extensions, terminal sessions              |
 
 The folder-by-folder breakdown of `_other/` lives in `_other/AGENTS/OTHER.md`.
 

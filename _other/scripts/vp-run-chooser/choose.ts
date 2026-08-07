@@ -6,7 +6,7 @@ import readline from "node:readline";
 import tty from "node:tty";
 import pc from "picocolors";
 
-import { findRepoRoot, loadTaskCatalog, type TaskEntry } from "./lib/catalog.ts";
+import { findRepoRoot, loadTaskCatalog, readPackageName, type TaskEntry } from "./lib/catalog.ts";
 import {
   brandTitle,
   groupHeading,
@@ -93,7 +93,7 @@ function banner(): void {
     home && repoRoot.startsWith(home) ? `~${repoRoot.slice(home.length)}` : repoRoot;
 
   console.log();
-  console.log(`  ${brandTitle("repo-template")}   ${dim("type to filter")}`);
+  console.log(`  ${brandTitle(readPackageName(repoRoot))}   ${dim("type to filter")}`);
   console.log(`  ${mutedPath(shownPath)}`);
   console.log(`  ${dim("↑↓ move · enter runs · esc / ctrl+c / ctrl+d exits")}`);
   console.log();

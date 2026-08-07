@@ -5,7 +5,7 @@ description: Migrate one app from another repository into this repo's app struct
 
 # migrate-app
 
-> **Sample skill.** A worked example of a *repo-specific* skill. Adjust the
+> **Sample skill.** A worked example of a _repo-specific_ skill. Adjust the
 > destination layout and validation commands to your project, or delete it.
 
 Migrate exactly **one** app per invocation into this repository's app tree.

@@ -8,7 +8,10 @@ export async function getOpenIssues(ctx, args = {}) {
     throw new Error("valid GitHub owner and repo are required");
   }
 
-  await ctx.openOrReuseTab(`https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues`, { wait: true });
+  await ctx.openOrReuseTab(
+    `https://github.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues`,
+    { wait: true },
+  );
   await ctx.waitForLoad();
 
   const issues = await ctx.js(String.raw`(() => {

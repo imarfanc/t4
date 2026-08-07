@@ -1,6 +1,6 @@
 /** Minimal bordered table for terminal output (replaces @cliffy/table). */
 
-const ANSI = /\u001b\[[0-9;]*m/g;
+const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
 
 function visibleLength(text: string): number {
   return text.replace(ANSI, "").length;
@@ -38,28 +38,16 @@ export function formatTable(options: {
   }
 
   const line = (cells: string[]) =>
-    indent +
-    "│ " +
-    cells.map((cell, i) => padCell(cell, widths[i])).join(gap + "│ ") +
-    " │";
+    indent + "│ " + cells.map((cell, i) => padCell(cell, widths[i])).join(gap + "│ ") + " │";
 
   const border =
-    indent +
-    "┌" +
-    widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) +
-    "┐";
+    indent + "┌" + widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) + "┐";
 
   const mid =
-    indent +
-    "├" +
-    widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) +
-    "┤";
+    indent + "├" + widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) + "┤";
 
   const bottom =
-    indent +
-    "└" +
-    widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) +
-    "┘";
+    indent + "└" + widths.map((w) => "─".repeat(w + 2)).join(gap.replace(/ /g, "─")) + "┘";
 
   return [border, line(headers), mid, ...rows.map((row) => line(row)), bottom].join("\n");
 }

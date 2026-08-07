@@ -11,9 +11,9 @@ readable afterwards.
 
 ## Commit summary
 
-| Hash | Date | Subject |
-| --- | --- | --- |
-| `2222222` | 2026-07-31 | ✨🧩 add(example): second commit on the branch |
+| Hash      | Date       | Subject                                         |
+| --------- | ---------- | ----------------------------------------------- |
+| `2222222` | 2026-07-31 | ✨🧩 add(example): second commit on the branch  |
 | `4444444` | 2026-07-31 | 🌿🔧 start(example): first commit on the branch |
 
 ## Detailed log
@@ -34,7 +34,7 @@ readable afterwards.
 
 Why the branch exists, in a few sentences — the reasoning, not the diff.
 
- example.ts | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+example.ts | 12 ++++++++++++
+1 file changed, 12 insertions(+)
 
 > Sample content. Copy this file's shape for real branches.

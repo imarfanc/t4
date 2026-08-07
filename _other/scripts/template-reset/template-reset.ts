@@ -107,9 +107,7 @@ console.log(`  ${bold(cyan("template-reset"))}  ${dim("strip shipped sample cont
 console.log(`  ${dim(`${ICON.folder} ${CONFIG_RELATIVE_PATH}`)}`);
 console.log();
 
-const pending = plan.items.filter(
-  (item) => item.action === "truncate" || item.action === "delete",
-);
+const pending = plan.items.filter((item) => item.action === "truncate" || item.action === "delete");
 
 if (plan.items.length > 0) {
   console.log(
@@ -153,10 +151,9 @@ const isInteractive = tty.isatty(0) && tty.isatty(1);
 if (isInteractive && flags.yes !== true) {
   const deletions = pending.filter((item) => item.action === "delete").length;
   const confirmed = await confirm({
-    message: `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}` +
-      (deletions > 0
-        ? `, including ${deletions} deletion${deletions === 1 ? "" : "s"}?`
-        : "?"),
+    message:
+      `Apply ${pending.length} change${pending.length === 1 ? "" : "s"}` +
+      (deletions > 0 ? `, including ${deletions} deletion${deletions === 1 ? "" : "s"}?` : "?"),
     default: false,
   });
 
@@ -180,7 +177,7 @@ if (plan.orphanedSkillKeys.length > 0) {
   // Clean up the symlinks this run just orphaned, so the repo is not left in a
   // state that reports drift the person did not cause.
   const targetDirs = loadSkillTargets(repoRoot).map((target) =>
-    path.relative(repoRoot, target.path)
+    path.relative(repoRoot, target.path),
   );
   const unlinked = unlinkDeletedSkills(repoRoot, plan.orphanedSkillKeys, targetDirs);
 
@@ -195,8 +192,10 @@ if (plan.orphanedSkillKeys.length > 0) {
   );
   for (const key of plan.orphanedSkillKeys) console.log(`      ${key}`);
   console.log(
-    `  ${dim(`Editing YAML mechanically is worse than naming the lines. ` +
-      `Then: \`${RUNNER} run skills:check\`.`)}`,
+    `  ${dim(
+      `Editing YAML mechanically is worse than naming the lines. ` +
+        `Then: \`${RUNNER} run skills:check\`.`,
+    )}`,
   );
 }
 

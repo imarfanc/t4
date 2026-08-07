@@ -4,20 +4,15 @@
   "type": "module",
   "scripts": {
     "choose": "node _other/scripts/vp-run-chooser/choose.ts",
-		"---": "",
-    "dev": "node -e \"console.error('No app yet — add backends and wire dev in package.json'); process.exit(1)\"",
-    "start": "node -e \"console.error('No app yet — add backends and wire start in package.json'); process.exit(1)\"",
-    "browser": "PORT=5173 node -e \"console.error('No app yet — add browser server script'); process.exit(1)\"",
-    "public": "AUTH_BYPASS=1 PORT=5173 node -e \"console.error('No app yet — add browser server script'); process.exit(1)\"",
-    "test": "test -f ./test.sh && ./test.sh || (echo 'test.sh not found' >&2; exit 1)",
-    "test:quick": "test -f ./test.sh && ./test.sh --quick || (echo 'test.sh not found' >&2; exit 1)",
-    "build:auth": "node -e \"console.error('No auth frontend yet — add build:auth script'); process.exit(1)\"",
+    "check": "vp check && node _other/scripts/template-check/template-check.ts",
     "skills": "node _other/scripts/link-skills/link-skills.ts",
     "skills:all": "node _other/scripts/link-skills/link-skills.ts --all",
     "skills:check": "node _other/scripts/link-skills/link-skills.ts --dry-run",
     "skills:prune": "node _other/scripts/link-skills/link-skills.ts --prune",
     "skills:links": "bash _other/scripts/link-skills/links.sh",
     "skills:config": "sh -c '${EDITOR:-vi} _other/scripts/link-skills/data/skills.yaml'",
+    "template:init": "node _other/scripts/template-init/template-init.ts",
+    "template:check": "node _other/scripts/template-check/template-check.ts",
     "template:reset": "node _other/scripts/template-reset/template-reset.ts",
     "template:reset:apply": "node _other/scripts/template-reset/template-reset.ts --apply",
     "template:config": "sh -c '${EDITOR:-vi} _other/scripts/template-reset/data/template.yaml'"
@@ -31,11 +26,8 @@
     "vite-plus": "^0.2.6",
     "yaml": "^2.8.0"
   },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "11.20.0",
-      "onFail": "download"
-    }
-  }
+  "engines": {
+    "node": ">=22.18"
+  },
+  "packageManager": "pnpm@11.20.0"
 }

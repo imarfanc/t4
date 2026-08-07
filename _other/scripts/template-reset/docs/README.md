@@ -2,6 +2,9 @@
 
 Strips the sample content this template ships with, leaving the structure.
 
+For a fresh repository, prefer `<runner> run template:init`: it also names the
+project, removes sample skill metadata, and reconciles the surviving links.
+
 ```bash
 <runner> run template:reset         # preview, writes nothing
 <runner> run template:reset:apply   # carry it out
@@ -43,8 +46,8 @@ no rule covers, and reports it. Sample content added later but never registered
 is the one failure mode this design has, so it is checked on every invocation
 rather than left to be noticed.
 
-Deleting a sample skill breaks two things. The tool fixes one and reports the
-other:
+Deleting a sample skill breaks two things. The lower-level reset command fixes
+one and reports the other; `template:init` handles both:
 
 - **Its symlinks** in `.agents/`, `.claude/`, `.cursor/` are removed, because
   whoever breaks a link should mend it — otherwise every fresh adaptation opens

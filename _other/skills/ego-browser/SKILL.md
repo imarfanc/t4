@@ -14,7 +14,6 @@ For setup, install, or connection problems, read `references/install.md`.
 
 Use the `Bash` tool to run all browser operations via `ego-browser nodejs <<'EOF' ... EOF` heredoc. Do not write code to a `.js` file first.
 
-
 ## Quick start
 
 ```bash
@@ -45,6 +44,7 @@ The heredoc body runs as a Node.js script that controls the selected ego-browser
 - Output: `cliLog`, `help`
 
 Notes:
+
 - `cliLog(value)` — prints to the terminal; it is the only output mechanism inside a heredoc, and all final results must go through it.
 - `await pageInfo()` — normally resolves to `{ url, title, w, h, sx, sy, pw, ph }`; if a native browser dialog is open, resolves to `{ dialog: ... }` instead because page JavaScript is blocked.
 - If `await pageInfo()` resolves to `{ dialog: ... }`, handle the dialog with `await cdp('Page.handleJavaScriptDialog', { accept: true })` or `accept: false` before running page JavaScript.
@@ -54,7 +54,6 @@ Notes:
 - `await serverFetch(url, options)` — issues a request from Node and returns the response body.
 - `await browserFetch(url, options)` — issues a request from the current browser page context and returns the response body.
 - `help(name)` — prints usage for a given helper, e.g. `cliLog(help('click'))`.
-
 
 ### Task spaces
 
@@ -74,14 +73,14 @@ After explicit user confirmation, to continue work from an existing user-owned, 
 
 **Ownership policy** — every task space has `ownership: 'agent' | 'agentDelegatedToUser' | 'user'`; the helpers treat user-owned spaces differently:
 
-| Helper | When the target space is user-owned |
-|---|---|
-| `switchTaskSpace` | throws — agent-owned spaces only |
-| `claimTaskSpace` | claims it (ownership transfers to the agent), then selects it |
-| `handOffTaskSpace` | skipped — resolves `{ done: false, skipped: 'user-owned' }` |
-| `completeTaskSpace(…, { keep: true })` | skipped — resolves `{ done: false, skipped: 'user-owned' }` |
-| `completeTaskSpace(…, { keep: false })` | claims it, then closes it |
-| `takeOverTaskSpace` / `waitForAgentControl` | no ownership check |
+| Helper                                      | When the target space is user-owned                           |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `switchTaskSpace`                           | throws — agent-owned spaces only                              |
+| `claimTaskSpace`                            | claims it (ownership transfers to the agent), then selects it |
+| `handOffTaskSpace`                          | skipped — resolves `{ done: false, skipped: 'user-owned' }`   |
+| `completeTaskSpace(…, { keep: true })`      | skipped — resolves `{ done: false, skipped: 'user-owned' }`   |
+| `completeTaskSpace(…, { keep: false })`     | claims it, then closes it                                     |
+| `takeOverTaskSpace` / `waitForAgentControl` | no ownership check                                            |
 
 `handOffTaskSpace` and `completeTaskSpace` resolve `{ done: true }` when the operation actually happened. Check `done` before telling the user the handoff/cleanup is finished — a `skipped` result usually means you targeted a space that was never yours.
 
@@ -93,36 +92,34 @@ When passing a string that may create a new task space, the string should reflec
 
 **If the task space needs to be preserved after the task ends, keep only the tabs that need to be shown to the user.** Keep loose awareness of how many tabs are open — a quick `(await listTabs()).length` is enough; there's no need to spend a dedicated round just to check. When scratch tabs (search-result pages, cross-check pages, and other one-off pages) pile up, close them as you go rather than letting them all accumulate for the end. When finishing with `{ keep: true }` to leave pages for the user, clear out the remaining scratch tabs so only the pages worth showing stay open. Close a single tab with `await closeTab(targetId)` (`targetId` comes from `listTabs()` or an `openOrReuseTab` return value).
 
-
 ### Control handoff
 
 Only one side — agent or user — holds control of a task space at any time. While the user holds control, any browser operation by the agent fails with a "user is controlling" message — do not retry it; follow the steps below to resume.
 
-A "user is controlling" error is a hard stop on the whole task — not an obstacle to route around. It means the user has deliberately taken the browser back, often because your current approach is going wrong. Honoring it *is* the correct outcome here; pushing the goal forward anyway is the failure. The only thing you may do is **ask the user and wait**.
+A "user is controlling" error is a hard stop on the whole task — not an obstacle to route around. It means the user has deliberately taken the browser back, often because your current approach is going wrong. Honoring it _is_ the correct outcome here; pushing the goal forward anyway is the failure. The only thing you may do is **ask the user and wait**.
 
 An "inactive", "not assigned to an agent", or similar task-space error is also a hard stop with the same confirmation requirement. Resume only after explicit user confirmation, then start with `await claimTaskSpace(id)`.
 
 **Handing off**: When the task requires user intervention (e.g. login, captcha, manual confirmation), call `await handOffTaskSpace([nameOrId])` to give control to the user, and tell them exactly what to do. Omitting `nameOrId` uses the currently selected task space; pass `task.id` across heredoc rounds to avoid ambiguity.
 
-**Regaining control**: Take control back *only* after the user explicitly confirms — through an Ask (your harness's button/option prompt, e.g. "Continue" vs "Finish task") or a "continue" message in chat. Then start a new heredoc with `await takeOverTaskSpace([nameOrId])` and resume; if the user chooses to finish, close out with `await completeTaskSpace(nameOrId, { keep })`. Never call `takeOverTaskSpace` on your own to grab control back — it has no ownership check and will seize the browser away from the user.
+**Regaining control**: Take control back _only_ after the user explicitly confirms — through an Ask (your harness's button/option prompt, e.g. "Continue" vs "Finish task") or a "continue" message in chat. Then start a new heredoc with `await takeOverTaskSpace([nameOrId])` and resume; if the user chooses to finish, close out with `await completeTaskSpace(nameOrId, { keep })`. Never call `takeOverTaskSpace` on your own to grab control back — it has no ownership check and will seize the browser away from the user.
 
 **Unexpected takeover**: The user can take over at any time via the browser GUI — the same effect as the agent calling `handOffTaskSpace`. Do not retry the failed operation and do not auto-takeover; surface the Ask above (Continue / Finish) and resume only when the user picks Continue.
 
 `await waitForAgentControl(nameOrId)` is a read-only blocking poll (it never takes control); use it only to wait inside the current heredoc for a handoff you initiated.
 
-
 ### Scroll / mouse
 
 ```js
 // DOM scroll
-await scrollBy(900)
+await scrollBy(900);
 await scrollToBottomUntil(
-  async () => await js(String.raw`document.querySelectorAll('article').length`) >= 20,
-  { step: 900, wait: 1, maxSteps: 20 }
-)
+  async () => (await js(String.raw`document.querySelectorAll('article').length`)) >= 20,
+  { step: 900, wait: 1, maxSteps: 20 },
+);
 
 // Real wheel event
-await scroll({ dy: 900 })
+await scroll({ dy: 900 });
 ```
 
 Element-target helpers such as `click`, `doubleClick`, `hover`, `dragMouse`, `fillInput`, `uploadFile`, and `waitForElement` accept the same selector/ref surface: raw CSS, `xpath=...`, `@N` / `ref=N`, and `loc=...` values from `snapshotText()` (`loc=css:...`, `loc=role:...`, `loc=href:...`). `@N` refs are for ego-browser helpers only; they are not valid selectors inside `document.querySelector(...)`.
@@ -136,19 +133,19 @@ Element-target helpers such as `click`, `doubleClick`, `hover`, `dragMouse`, `fi
 - `options.label` (optional) — a 3-6 word action description; triggers a visual highlight animation.
 
 ```js
-await click('@21', { label: 'check login status' })
-await click('button.primary', { label: 'click submit button' })
-await click([420, 260])
-await click({ x: 420, y: 260 })
-await click({ selector: 'canvas#stage', x: 12, y: 8 })
-await hover('@5', { label: 'hover to reveal menu' })
-await dragMouse([from, to], { label: 'drag card' })
+await click("@21", { label: "check login status" });
+await click("button.primary", { label: "click submit button" });
+await click([420, 260]);
+await click({ x: 420, y: 260 });
+await click({ selector: "canvas#stage", x: 12, y: 8 });
+await hover("@5", { label: "hover to reveal menu" });
+await dragMouse([from, to], { label: "drag card" });
 ```
 
 ### uploadFile
 
 ```js
-await uploadFile('input[type="file"]', "/absolute/path/to/file.pdf")
+await uploadFile('input[type="file"]', "/absolute/path/to/file.pdf");
 ```
 
 ### js
@@ -164,9 +161,8 @@ const data = await js(String.raw`(() => {
     text: el.innerText,
     links: [...el.querySelectorAll('a')].map(a => a.href),
   }))
-})()`)
+})()`);
 ```
-
 
 ## Recommended workflow
 
@@ -192,7 +188,6 @@ Before writing substantial content into a rich editor, perform a tiny write prob
    - Use `await cdp(...)` for browser protocol operations that helpers do not cover.
 
 These workflows can be combined. A task may take multiple heredoc rounds when the next step depends on fresh page state or user handoff. In each round, write a coherent script that advances the task: observe, act or extract, verify, and report with `cliLog(...)`. Avoid tiny probe scripts, but don't force the whole task into one oversized script.
-
 
 ## Caveats
 

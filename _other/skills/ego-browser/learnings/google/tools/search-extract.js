@@ -9,7 +9,9 @@ export async function searchAndExtract(ctx, args = {}) {
   const maxResults = boundedInteger(args.maxResults, 10, 100);
   if (!query) throw new Error("search query is required");
 
-  await ctx.openOrReuseTab(`https://www.google.com/search?q=${encodeURIComponent(query)}`, { wait: true });
+  await ctx.openOrReuseTab(`https://www.google.com/search?q=${encodeURIComponent(query)}`, {
+    wait: true,
+  });
   await ctx.waitForLoad();
 
   const results = await ctx.js(String.raw`(() => {

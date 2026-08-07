@@ -9,9 +9,12 @@ export async function searchRepos(ctx, args = {}) {
   const maxResults = boundedInteger(args.maxResults, 25, 100);
   if (!query) throw new Error("search query is required");
 
-  await ctx.openOrReuseTab(`https://github.com/search?q=${encodeURIComponent(query)}&type=repositories&s=stars&o=desc`, {
-    wait: true,
-  });
+  await ctx.openOrReuseTab(
+    `https://github.com/search?q=${encodeURIComponent(query)}&type=repositories&s=stars&o=desc`,
+    {
+      wait: true,
+    },
+  );
   await ctx.waitForLoad();
 
   const repos = await ctx.js(String.raw`(() => {
